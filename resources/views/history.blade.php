@@ -20,27 +20,57 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #0D1117;
-            color: #C9D1D9;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
             overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 50%;
+            top: -300px;
+            right: -300px;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 50%;
+            bottom: -250px;
+            left: -250px;
+            opacity: 0.3;
+            z-index: 0;
         }
 
         .container {
             display: flex;
             min-height: 100vh;
+            position: relative;
+            z-index: 1;
         }
 
         /* Sidebar Styles - Dark Mode */
         .sidebar {
             width: 250px;
-            background-color: #161B22;
-            color: #C9D1D9;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            color: #333;
             padding: 20px 0;
             position: fixed;
             height: 100vh;
             left: 0;
             top: 0;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
             overflow-y: auto;
         }
 
@@ -48,9 +78,9 @@
             padding: 0 20px 30px;
             font-size: 28px;
             font-weight: bold;
-            border-bottom: 2px solid rgba(139, 148, 158, 0.2);
+            border-bottom: 2px solid #e0e7ff;
             margin-bottom: 20px;
-            color: #58A6FF;
+            color: #667eea;
         }
 
         .sidebar-menu {
@@ -65,6 +95,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            color: #666;
         }
 
         .sidebar-menu li i {
@@ -72,14 +103,16 @@
         }
 
         .sidebar-menu li:hover {
-            background-color: rgba(88, 166, 255, 0.1);
-            border-left-color: #58A6FF;
+            background-color: rgba(102, 126, 234, 0.1);
+            border-left-color: #667eea;
+            color: #667eea;
         }
 
         .sidebar-menu li.active {
-            background-color: rgba(88, 166, 255, 0.15);
-            border-left-color: #58A6FF;
-            color: #58A6FF;
+            background-color: rgba(102, 126, 234, 0.15);
+            border-left-color: #667eea;
+            color: #667eea;
+            font-weight: 600;
         }
 
         /* Main Content */
@@ -88,44 +121,47 @@
             flex: 1;
             padding: 30px;
             width: calc(100% - 250px);
-            background-color: #0D1117;
+            background: transparent;
         }
 
         /* Header Section */
         .header {
-            background-color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 25px 30px;
-            border-radius: 12px;
-            border: 1px solid #E1E4E8;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
         }
 
         .header-title {
             font-size: 28px;
             font-weight: 600;
-            color: #1F6FEB;
+            color: #667eea;
         }
 
         .btn-logout {
-            background-color: #DA3633;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
             color: white;
             border: none;
             padding: 10px 20px;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 14px;
             transition: all 0.3s;
             display: flex;
             align-items: center;
             gap: 8px;
+            box-shadow: 0 4px 15px rgba(250, 112, 154, 0.4);
         }
 
         .btn-logout:hover {
-            background-color: #F85149;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(250, 112, 154, 0.6);
         }
 
         /* Stats Cards Row */
@@ -137,17 +173,45 @@
         }
 
         .stat-card {
-            background-color: #FFFFFF;
-            border: 1px solid #E1E4E8;
-            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
             padding: 25px;
             transition: all 0.3s;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .stat-card:nth-child(1)::before {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .stat-card:nth-child(2)::before {
+            background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .stat-card:nth-child(3)::before {
+            background: linear-gradient(90deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .stat-card:nth-child(4)::before {
+            background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
         }
 
         .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(88, 166, 255, 0.2);
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(31, 38, 135, 0.25);
         }
 
         .stat-icon {
@@ -162,35 +226,35 @@
         }
 
         .stat-icon.blue {
-            background-color: rgba(88, 166, 255, 0.1);
-            color: #58A6FF;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
         }
 
         .stat-icon.orange {
-            background-color: rgba(242, 140, 40, 0.1);
-            color: #F2994A;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
         }
 
         .stat-icon.red {
-            background-color: rgba(248, 81, 73, 0.1);
-            color: #F85149;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
         }
 
         .stat-icon.green {
-            background-color: rgba(63, 185, 80, 0.1);
-            color: #3FB950;
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
         }
 
         .stat-value {
             font-size: 32px;
             font-weight: bold;
             margin-bottom: 5px;
-            color: #24292F;
+            color: #333;
         }
 
         .stat-label {
             font-size: 14px;
-            color: #57606A;
+            color: #666;
         }
 
         /* Two Column Layout */
@@ -203,25 +267,26 @@
 
         /* Device Status Box */
         .device-status-box {
-            background-color: #FFFFFF;
-            border: 1px solid #E1E4E8;
-            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
             padding: 25px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
         }
 
         .box-title {
             font-size: 20px;
             font-weight: 600;
             margin-bottom: 20px;
-            color: #1F6FEB;
+            color: #667eea;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
         .box-title i {
-            color: #58A6FF;
+            color: #667eea;
         }
 
         .device-list {
@@ -235,9 +300,9 @@
             justify-content: space-between;
             align-items: center;
             padding: 15px;
-            background-color: #F6F8FA;
-            border-radius: 8px;
-            border: 1px solid #E1E4E8;
+            background-color: #f8faff;
+            border-radius: 10px;
+            border: 1px solid #e0e7ff;
         }
 
         .device-info {
@@ -249,18 +314,18 @@
         .device-icon {
             width: 40px;
             height: 40px;
-            border-radius: 8px;
-            background-color: rgba(88, 166, 255, 0.1);
+            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #58A6FF;
+            color: white;
             font-size: 18px;
         }
 
         .device-name {
             font-weight: 600;
-            color: #24292F;
+            color: #333;
         }
 
         .device-status {
@@ -274,13 +339,13 @@
         }
 
         .device-status.online {
-            background-color: rgba(63, 185, 80, 0.1);
-            color: #3FB950;
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
         }
 
         .device-status.offline {
-            background-color: rgba(248, 81, 73, 0.1);
-            color: #F85149;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
         }
 
         .status-dot {
@@ -488,8 +553,8 @@
                 datasets: [{
                     label: 'Alerts',
                     data: [12, 19, 15, 25, 22, 18, 24],
-                    backgroundColor: 'rgba(88, 166, 255, 0.8)',
-                    borderColor: '#58A6FF',
+                    backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                    borderColor: '#667eea',
                     borderWidth: 1,
                     borderRadius: 6
                 }]
@@ -506,18 +571,18 @@
                     y: {
                         beginAtZero: true,
                         grid: {
-                            color: '#E1E4E8'
+                            color: '#e0e7ff'
                         },
                         ticks: {
-                            color: '#57606A'
+                            color: '#666'
                         }
                     },
                     x: {
                         grid: {
-                            color: '#E1E4E8'
+                            color: '#e0e7ff'
                         },
                         ticks: {
-                            color: '#57606A'
+                            color: '#666'
                         }
                     }
                 }

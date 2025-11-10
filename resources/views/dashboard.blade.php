@@ -37,11 +37,38 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #0D1117;
-            color: #C9D1D9;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
             overflow-x: hidden;
             -ms-overflow-style: none;
             scrollbar-width: none;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 50%;
+            top: -300px;
+            right: -300px;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 50%;
+            bottom: -250px;
+            left: -250px;
+            opacity: 0.3;
+            z-index: 0;
         }
 
         body::-webkit-scrollbar {
@@ -53,19 +80,22 @@
         .container {
             display: flex;
             min-height: 100vh;
+            position: relative;
+            z-index: 1;
         }
 
         /* Sidebar Styles */
         .sidebar {
             width: 250px;
-            background-color: #161B22;
-            color: #C9D1D9;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            color: #333;
             padding: 20px 0;
             position: fixed;
             height: 100vh;
             left: 0;
             top: 0;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
             overflow-y: auto;
             overflow-x: hidden;
             -ms-overflow-style: none;
@@ -82,9 +112,9 @@
             padding: 0 20px 30px;
             font-size: 28px;
             font-weight: bold;
-            border-bottom: 2px solid rgba(139, 148, 158, 0.2);
+            border-bottom: 2px solid #e0e7ff;
             margin-bottom: 20px;
-            color: #58A6FF;
+            color: #667eea;
         }
 
         .sidebar-menu {
@@ -99,6 +129,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            color: #666;
         }
 
         .sidebar-menu li i {
@@ -106,14 +137,16 @@
         }
 
         .sidebar-menu li:hover {
-            background-color: rgba(88, 166, 255, 0.1);
-            border-left-color: #58A6FF;
+            background-color: rgba(102, 126, 234, 0.1);
+            border-left-color: #667eea;
+            color: #667eea;
         }
 
         .sidebar-menu li.active {
-            background-color: rgba(88, 166, 255, 0.15);
-            border-left-color: #58A6FF;
-            color: #58A6FF;
+            background-color: rgba(102, 126, 234, 0.15);
+            border-left-color: #667eea;
+            color: #667eea;
+            font-weight: 600;
         }
 
         /* Main Content */
@@ -126,7 +159,7 @@
             overflow-x: hidden;
             -ms-overflow-style: none;
             scrollbar-width: none;
-            background-color: #0D1117;
+            background: transparent;
         }
 
         .main-content::-webkit-scrollbar {
@@ -137,25 +170,26 @@
 
         /* Header Section */
         .header {
-            background-color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 25px 30px;
-            border-radius: 12px;
-            border: 1px solid #E1E4E8;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
         }
 
         .header-user {
             font-size: 24px;
             font-weight: 600;
-            color: #1F6FEB;
+            color: #667eea;
         }
 
         .header-user span {
-            color: #24292F;
+            color: #333;
             font-weight: 400;
         }
 
@@ -184,37 +218,70 @@
         }
 
         .sensor-box {
-            background-color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 25px;
-            border-radius: 12px;
-            border: 1px solid #E1E4E8;
-            border-top: 3px solid #58A6FF;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             transition: all 0.3s;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sensor-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .sensor-box:nth-child(1)::before {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .sensor-box:nth-child(2)::before {
+            background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .sensor-box:nth-child(3)::before {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .sensor-box:nth-child(4)::before {
+            background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .sensor-box:nth-child(5)::before {
+            background: linear-gradient(90deg, #fa709a 0%, #fee140 100%);
         }
 
         .sensor-box:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(88, 166, 255, 0.2);
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(31, 38, 135, 0.25);
         }
 
         .sensor-label {
-            color: #57606A;
-            font-size: 14px;
+            color: #666;
+            font-size: 13px;
             margin-bottom: 10px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            font-weight: 600;
         }
 
         .sensor-value {
             font-size: 32px;
             font-weight: bold;
-            color: #1F6FEB;
+            color: #333;
             margin-bottom: 5px;
         }
 
         .sensor-unit {
-            color: #6E7781;
+            color: #999;
             font-size: 14px;
         }
 
@@ -227,20 +294,21 @@
         }
 
         .control-box {
-            background-color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 25px;
-            border-radius: 12px;
-            border: 1px solid #E1E4E8;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
         }
 
         .control-title {
             font-size: 18px;
             font-weight: 600;
-            color: #1F6FEB;
+            color: #667eea;
             margin-bottom: 20px;
             padding-bottom: 10px;
-            border-bottom: 2px solid #E1E4E8;
+            border-bottom: 2px solid #e0e7ff;
         }
 
         /* Actuator Control */
@@ -249,14 +317,14 @@
             justify-content: space-between;
             align-items: center;
             padding: 15px;
-            background-color: #F6F8FA;
+            background-color: #f8faff;
             border-radius: 10px;
-            border: 1px solid #E1E4E8;
+            border: 1px solid #e0e7ff;
         }
 
         .actuator-name {
             font-weight: 600;
-            color: #24292F;
+            color: #333;
         }
 
         .status-badge {
@@ -267,48 +335,48 @@
         }
 
         .status-on {
-            background-color: rgba(63, 185, 80, 0.2);
-            color: #3FB950;
-            border: 1px solid #3FB950;
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+            border: none;
         }
 
         .status-off {
-            background-color: rgba(248, 81, 73, 0.2);
-            color: #F85149;
-            border: 1px solid #F85149;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            border: none;
         }
 
         /* Fuzzy Decision */
         .fuzzy-content {
-            background-color: #F6F8FA;
+            background-color: #f8faff;
             padding: 20px;
             border-radius: 10px;
-            border: 1px solid #E1E4E8;
+            border: 1px solid #e0e7ff;
         }
 
         .fuzzy-status {
             font-size: 20px;
             font-weight: bold;
-            color: #1F6FEB;
+            color: #667eea;
             margin-bottom: 15px;
         }
 
         .fuzzy-recommendation {
-            color: #24292F;
+            color: #333;
             line-height: 1.6;
             margin-bottom: 10px;
         }
 
         .fuzzy-details {
             font-size: 13px;
-            color: #57606A;
+            color: #666;
             margin-top: 15px;
             padding-top: 15px;
-            border-top: 1px solid #E1E4E8;
+            border-top: 1px solid #e0e7ff;
         }
 
         .no-data {
-            color: #6E7781;
+            color: #999;
             font-style: italic;
             text-align: center;
             padding: 20px;
@@ -320,20 +388,21 @@
         }
 
         .chart-container {
-            background-color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 30px;
-            border-radius: 12px;
-            border: 1px solid #E1E4E8;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
         }
 
         .chart-title {
             font-size: 20px;
             font-weight: 600;
-            color: #1F6FEB;
+            color: #667eea;
             margin-bottom: 20px;
             padding-bottom: 10px;
-            border-bottom: 2px solid #E1E4E8;
+            border-bottom: 2px solid #e0e7ff;
         }
 
         .chart-wrapper {
@@ -346,20 +415,22 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            background-color: #DA3633;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
             color: white;
             border: none;
             padding: 12px 25px;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 14px;
             font-weight: 600;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
             margin-left: 10px;
+            box-shadow: 0 4px 15px rgba(250, 112, 154, 0.4);
         }
 
         .btn-logout:hover {
-            background-color: #F85149;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(250, 112, 154, 0.6);
         }
 
         .header-buttons {
@@ -565,36 +636,36 @@
                             {
                                 label: 'pH',
                                 data: data.phData,
-                                borderColor: '#58A6FF',
-                                backgroundColor: 'rgba(88, 166, 255, 0.1)',
+                                borderColor: '#667eea',
+                                backgroundColor: 'rgba(102, 126, 234, 0.1)',
                                 tension: 0.4
                             },
                             {
                                 label: 'Jarak Air (cm)',
                                 data: data.waterLevelData,
-                                borderColor: '#3FB950',
-                                backgroundColor: 'rgba(63, 185, 80, 0.1)',
+                                borderColor: '#4facfe',
+                                backgroundColor: 'rgba(79, 172, 254, 0.1)',
                                 tension: 0.4
                             },
                             {
                                 label: 'TDS (ppm)',
                                 data: data.tdsData,
-                                borderColor: '#F2994A',
-                                backgroundColor: 'rgba(242, 153, 74, 0.1)',
+                                borderColor: '#f093fb',
+                                backgroundColor: 'rgba(240, 147, 251, 0.1)',
                                 tension: 0.4
                             },
                             {
                                 label: 'Salinitas (ppt)',
                                 data: data.salinityData,
-                                borderColor: '#BB86FC',
-                                backgroundColor: 'rgba(187, 134, 252, 0.1)',
+                                borderColor: '#43e97b',
+                                backgroundColor: 'rgba(67, 233, 123, 0.1)',
                                 tension: 0.4
                             },
                             {
                                 label: 'Kekeruhan (NTU)',
                                 data: data.turbidityData,
-                                borderColor: '#F85149',
-                                backgroundColor: 'rgba(248, 81, 73, 0.1)',
+                                borderColor: '#fa709a',
+                                backgroundColor: 'rgba(250, 112, 154, 0.1)',
                                 tension: 0.4
                             }
                         ]
@@ -606,7 +677,7 @@
                             legend: {
                                 position: 'top',
                                 labels: {
-                                    color: '#24292F'
+                                    color: '#333'
                                 }
                             },
                             title: {
@@ -617,18 +688,18 @@
                             y: {
                                 beginAtZero: false,
                                 grid: {
-                                    color: '#E1E4E8'
+                                    color: '#e0e7ff'
                                 },
                                 ticks: {
-                                    color: '#57606A'
+                                    color: '#666'
                                 }
                             },
                             x: {
                                 grid: {
-                                    color: '#E1E4E8'
+                                    color: '#e0e7ff'
                                 },
                                 ticks: {
-                                    color: '#57606A'
+                                    color: '#666'
                                 }
                             }
                         }
