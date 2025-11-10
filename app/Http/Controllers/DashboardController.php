@@ -101,6 +101,49 @@ class DashboardController extends Controller
     }
 
     /**
+     * Halaman Riwayat
+     */
+    public function history()
+    {
+        return view('history', [
+            'userName' => Auth::user()->name,
+        ]);
+    }
+
+    /**
+     * API endpoint untuk statistik riwayat
+     */
+    public function getHistoryStats()
+    {
+        // Total devices (5 sensors)
+        $totalDevices = 5;
+        
+        // Devices with warning (contoh: cek sensor readings terakhir)
+        $latestSensor = SensorReading::latest()->first();
+        $devicesWithWarning = 0;
+        
+        if ($latestSensor) {
+            if ($latestSensor->ph_value < 6.5 || $latestSensor->ph_value > 8.5) $devicesWithWarning++;
+            if ($latestSensor->turbidity > 50) $devicesWithWarning++;
+        }
+        
+        // Total alerts dalam 24 jam
+        $totalAlerts = FuzzyDecision::where('created_at', '>=', now()->subDay())
+            ->where('water_quality_status', 'POOR')
+            ->count();
+        
+        // Average response time (simulasi - dalam detik)
+        $avgResponseTime = '1.2s';
+        
+        return response()->json([
+            'totalDevices' => $totalDevices,
+            'devicesWithWarning' => $devicesWithWarning,
+            'totalAlerts' => $totalAlerts,
+            'avgResponseTime' => $avgResponseTime,
+        ]);
+    }
+
+    /**
      * API endpoint untuk mendapatkan data grafik riwayat 24 jam
      */
     public function getChartData()

@@ -37,11 +37,38 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #F5EFE6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #333;
             overflow-x: hidden;
             -ms-overflow-style: none;
             scrollbar-width: none;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 50%;
+            top: -300px;
+            right: -300px;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 50%;
+            bottom: -250px;
+            left: -250px;
+            opacity: 0.3;
+            z-index: 0;
         }
 
         body::-webkit-scrollbar {
@@ -53,23 +80,28 @@
         .container {
             display: flex;
             min-height: 100vh;
+            position: relative;
+            z-index: 1;
         }
 
         /* Sidebar Styles */
         .sidebar {
             width: 250px;
-            background-color: #6D94C5;
-            color: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            color: #333;
             padding: 20px 0;
             position: fixed;
             height: 100vh;
             left: 0;
             top: 0;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
             overflow-y: auto;
             overflow-x: hidden;
             -ms-overflow-style: none;
             scrollbar-width: none;
+            display: flex;
+            flex-direction: column;
         }
 
         .sidebar::-webkit-scrollbar {
@@ -82,25 +114,75 @@
             padding: 0 20px 30px;
             font-size: 28px;
             font-weight: bold;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            border-bottom: 2px solid #e0e7ff;
             margin-bottom: 20px;
+            color: #667eea;
         }
 
         .sidebar-menu {
             list-style: none;
+            flex: 1;
         }
 
         .sidebar-menu li {
             padding: 15px 20px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
             border-left: 4px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #666;
         }
 
-        .sidebar-menu li:hover,
+        .sidebar-menu li i {
+            font-size: 18px;
+        }
+
+        .sidebar-menu li:hover {
+            background-color: rgba(102, 126, 234, 0.1);
+            border-left-color: #667eea;
+            color: #667eea;
+        }
+
         .sidebar-menu li.active {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-left-color: #F5EFE6;
+            background-color: rgba(102, 126, 234, 0.15);
+            border-left-color: #667eea;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .sidebar-logout {
+            padding: 20px;
+            border-top: 2px solid #e0e7ff;
+            margin-top: auto;
+        }
+
+        .sidebar-logout form {
+            margin: 0;
+        }
+
+        .sidebar-logout .btn-logout {
+            width: 100%;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(250, 112, 154, 0.4);
+        }
+
+        .sidebar-logout .btn-logout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(250, 112, 154, 0.6);
         }
 
         /* Main Content */
@@ -113,6 +195,7 @@
             overflow-x: hidden;
             -ms-overflow-style: none;
             scrollbar-width: none;
+            background: transparent;
         }
 
         .main-content::-webkit-scrollbar {
@@ -123,20 +206,22 @@
 
         /* Header Section */
         .header {
-            background-color: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 25px 30px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
         }
 
         .header-user {
             font-size: 24px;
             font-weight: 600;
-            color: #6D94C5;
+            color: #667eea;
         }
 
         .header-user span {
@@ -145,7 +230,7 @@
         }
 
         .btn-setting {
-            background-color: #6D94C5;
+            background-color: #DA3633;
             color: white;
             border: none;
             padding: 12px 25px;
@@ -157,7 +242,7 @@
         }
 
         .btn-setting:hover {
-            background-color: #5a7ba8;
+            background-color: #F85149;
         }
 
         /* Sensor Data Section */
@@ -169,30 +254,65 @@
         }
 
         .sensor-box {
-            background-color: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-            border-top: 4px solid #6D94C5;
-            transition: transform 0.3s;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sensor-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .sensor-box:nth-child(1)::before {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .sensor-box:nth-child(2)::before {
+            background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .sensor-box:nth-child(3)::before {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .sensor-box:nth-child(4)::before {
+            background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .sensor-box:nth-child(5)::before {
+            background: linear-gradient(90deg, #fa709a 0%, #fee140 100%);
         }
 
         .sensor-box:hover {
             transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(31, 38, 135, 0.25);
         }
 
         .sensor-label {
             color: #666;
-            font-size: 14px;
+            font-size: 13px;
             margin-bottom: 10px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            font-weight: 600;
         }
 
         .sensor-value {
             font-size: 32px;
             font-weight: bold;
-            color: #6D94C5;
+            color: #333;
             margin-bottom: 5px;
         }
 
@@ -210,19 +330,21 @@
         }
 
         .control-box {
-            background-color: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
         }
 
         .control-title {
             font-size: 18px;
             font-weight: 600;
-            color: #6D94C5;
+            color: #667eea;
             margin-bottom: 20px;
             padding-bottom: 10px;
-            border-bottom: 2px solid #CBDCEB;
+            border-bottom: 2px solid #e0e7ff;
         }
 
         /* Actuator Control */
@@ -231,8 +353,9 @@
             justify-content: space-between;
             align-items: center;
             padding: 15px;
-            background-color: #F5EFE6;
+            background-color: #f8faff;
             border-radius: 10px;
+            border: 1px solid #e0e7ff;
         }
 
         .actuator-name {
@@ -248,26 +371,29 @@
         }
 
         .status-on {
-            background-color: #4CAF50;
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
             color: white;
+            border: none;
         }
 
         .status-off {
-            background-color: #f44336;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
             color: white;
+            border: none;
         }
 
         /* Fuzzy Decision */
         .fuzzy-content {
-            background-color: #CBDCEB;
+            background-color: #f8faff;
             padding: 20px;
             border-radius: 10px;
+            border: 1px solid #e0e7ff;
         }
 
         .fuzzy-status {
             font-size: 20px;
             font-weight: bold;
-            color: #6D94C5;
+            color: #667eea;
             margin-bottom: 15px;
         }
 
@@ -282,7 +408,7 @@
             color: #666;
             margin-top: 15px;
             padding-top: 15px;
-            border-top: 1px solid rgba(109, 148, 197, 0.3);
+            border-top: 1px solid #e0e7ff;
         }
 
         .no-data {
@@ -298,50 +424,26 @@
         }
 
         .chart-container {
-            background-color: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
         }
 
         .chart-title {
             font-size: 20px;
             font-weight: 600;
-            color: #6D94C5;
+            color: #667eea;
             margin-bottom: 20px;
             padding-bottom: 10px;
-            border-bottom: 2px solid #CBDCEB;
+            border-bottom: 2px solid #e0e7ff;
         }
 
         .chart-wrapper {
             position: relative;
             height: 400px;
-        }
-
-        /* Logout Button */
-        .btn-logout {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background-color: #f44336;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: background-color 0.3s;
-            margin-left: 10px;
-        }
-
-        .btn-logout:hover {
-            background-color: #d32f2f;
-        }
-
-        .header-buttons {
-            display: flex;
-            gap: 10px;
         }
     </style>
 </head>
@@ -350,11 +452,27 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-logo">
-                TambaQ
+                <i class="bi bi-tsunami"></i> TambaQ
             </div>
             <ul class="sidebar-menu">
-                <li class="active">Dashboard</li>
+                <li class="active">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </li>
+                <li onclick="window.location.href='/history'">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Riwayat</span>
+                </li>
             </ul>
+            <div class="sidebar-logout">
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="btn-logout">
+                        <i class="bi bi-box-arrow-left"></i>
+                        Logout
+                    </button>
+                </form>
+            </div>
         </aside>
 
         <!-- Main Content -->
@@ -363,16 +481,6 @@
             <section class="header">
                 <div class="header-user">
                     Selamat Datang, <span>{{ $userName }}</span>
-                </div>
-                <div class="header-buttons">
-                    <button class="btn-setting">⚙ Pengaturan</button>
-                    <form method="POST" action="{{ route('logout') }}" style="display: inline;">
-                        @csrf
-                        <button type="submit" class="btn-logout">
-                            <i class="bi bi-box-arrow-left"></i>
-                            Logout
-                        </button>
-                    </form>
                 </div>
             </section>
 
@@ -531,36 +639,36 @@
                             {
                                 label: 'pH',
                                 data: data.phData,
-                                borderColor: '#6D94C5',
-                                backgroundColor: 'rgba(109, 148, 197, 0.1)',
+                                borderColor: '#667eea',
+                                backgroundColor: 'rgba(102, 126, 234, 0.1)',
                                 tension: 0.4
                             },
                             {
                                 label: 'Jarak Air (cm)',
                                 data: data.waterLevelData,
-                                borderColor: '#CBDCEB',
-                                backgroundColor: 'rgba(203, 220, 235, 0.1)',
+                                borderColor: '#4facfe',
+                                backgroundColor: 'rgba(79, 172, 254, 0.1)',
                                 tension: 0.4
                             },
                             {
                                 label: 'TDS (ppm)',
                                 data: data.tdsData,
-                                borderColor: '#F5EFE6',
-                                backgroundColor: 'rgba(245, 239, 230, 0.1)',
+                                borderColor: '#f093fb',
+                                backgroundColor: 'rgba(240, 147, 251, 0.1)',
                                 tension: 0.4
                             },
                             {
                                 label: 'Salinitas (ppt)',
                                 data: data.salinityData,
-                                borderColor: '#4CAF50',
-                                backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                                borderColor: '#43e97b',
+                                backgroundColor: 'rgba(67, 233, 123, 0.1)',
                                 tension: 0.4
                             },
                             {
                                 label: 'Kekeruhan (NTU)',
                                 data: data.turbidityData,
-                                borderColor: '#FF9800',
-                                backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                                borderColor: '#fa709a',
+                                backgroundColor: 'rgba(250, 112, 154, 0.1)',
                                 tension: 0.4
                             }
                         ]
@@ -571,6 +679,9 @@
                         plugins: {
                             legend: {
                                 position: 'top',
+                                labels: {
+                                    color: '#333'
+                                }
                             },
                             title: {
                                 display: false
@@ -578,7 +689,21 @@
                         },
                         scales: {
                             y: {
-                                beginAtZero: false
+                                beginAtZero: false,
+                                grid: {
+                                    color: '#e0e7ff'
+                                },
+                                ticks: {
+                                    color: '#666'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: '#e0e7ff'
+                                },
+                                ticks: {
+                                    color: '#666'
+                                }
                             }
                         }
                     }
