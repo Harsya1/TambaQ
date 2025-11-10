@@ -20,7 +20,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #6D94C5 0%, #CBDCEB 100%);
+            background-color: #0D1117;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -29,9 +29,9 @@
         }
 
         .register-container {
-            background-color: #F5EFE6;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            background-color: #FFFFFF;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
             overflow: hidden;
             width: 100%;
             max-width: 450px;
@@ -41,7 +41,7 @@
         }
 
         .register-header {
-            background-color: #6D94C5;
+            background: linear-gradient(135deg, #58A6FF 0%, #1F6FEB 100%);
             color: white;
             padding: 20px 30px;
             text-align: center;
@@ -74,21 +74,23 @@
         .form-input {
             width: 100%;
             padding: 10px 15px;
-            border: 2px solid #CBDCEB;
+            border: 2px solid #E1E4E8;
             border-radius: 10px;
             font-size: 14px;
             transition: all 0.3s;
-            background-color: white;
+            background-color: #F6F8FA;
+            color: #24292F;
         }
 
         .form-input:focus {
             outline: none;
-            border-color: #6D94C5;
-            box-shadow: 0 0 0 3px rgba(109, 148, 197, 0.1);
+            border-color: #58A6FF;
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
         }
 
         .form-input.error {
-            border-color: #f44336;
+            border-color: #F85149;
         }
 
         .password-wrapper {
@@ -103,17 +105,17 @@
             background: none;
             border: none;
             cursor: pointer;
-            color: #6D94C5;
+            color: #58A6FF;
             font-size: 18px;
             padding: 5px;
         }
 
         .password-toggle:hover {
-            color: #5a7ba8;
+            color: #1F6FEB;
         }
 
         .error-text {
-            color: #f44336;
+            color: #F85149;
             font-size: 12px;
             margin-top: 5px;
             display: none;
@@ -127,35 +129,36 @@
         .btn-register {
             width: 100%;
             padding: 12px;
-            background-color: #6D94C5;
+            background: linear-gradient(135deg, #58A6FF 0%, #1F6FEB 100%);
             color: white;
             border: none;
             border-radius: 10px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
             margin-top: 5px;
         }
 
         .btn-register:hover {
-            background-color: #5a7ba8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(88, 166, 255, 0.4);
         }
 
         .register-footer {
             text-align: center;
             margin-top: 15px;
             padding-top: 15px;
-            border-top: 1px solid #CBDCEB;
+            border-top: 1px solid #E1E4E8;
         }
 
         .register-footer p {
-            color: #666;
+            color: #57606A;
             font-size: 13px;
         }
 
         .register-footer a {
-            color: #6D94C5;
+            color: #58A6FF;
             text-decoration: none;
             font-weight: 600;
         }

@@ -37,8 +37,8 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #F5EFE6;
-            color: #333;
+            background-color: #0D1117;
+            color: #C9D1D9;
             overflow-x: hidden;
             -ms-overflow-style: none;
             scrollbar-width: none;
@@ -58,14 +58,14 @@
         /* Sidebar Styles */
         .sidebar {
             width: 250px;
-            background-color: #6D94C5;
-            color: white;
+            background-color: #161B22;
+            color: #C9D1D9;
             padding: 20px 0;
             position: fixed;
             height: 100vh;
             left: 0;
             top: 0;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
             overflow-y: auto;
             overflow-x: hidden;
             -ms-overflow-style: none;
@@ -82,8 +82,9 @@
             padding: 0 20px 30px;
             font-size: 28px;
             font-weight: bold;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            border-bottom: 2px solid rgba(139, 148, 158, 0.2);
             margin-bottom: 20px;
+            color: #58A6FF;
         }
 
         .sidebar-menu {
@@ -93,14 +94,26 @@
         .sidebar-menu li {
             padding: 15px 20px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
             border-left: 4px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .sidebar-menu li:hover,
+        .sidebar-menu li i {
+            font-size: 18px;
+        }
+
+        .sidebar-menu li:hover {
+            background-color: rgba(88, 166, 255, 0.1);
+            border-left-color: #58A6FF;
+        }
+
         .sidebar-menu li.active {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-left-color: #F5EFE6;
+            background-color: rgba(88, 166, 255, 0.15);
+            border-left-color: #58A6FF;
+            color: #58A6FF;
         }
 
         /* Main Content */
@@ -113,6 +126,7 @@
             overflow-x: hidden;
             -ms-overflow-style: none;
             scrollbar-width: none;
+            background-color: #0D1117;
         }
 
         .main-content::-webkit-scrollbar {
@@ -123,29 +137,30 @@
 
         /* Header Section */
         .header {
-            background-color: white;
+            background-color: #FFFFFF;
             padding: 25px 30px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            border: 1px solid #E1E4E8;
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .header-user {
             font-size: 24px;
             font-weight: 600;
-            color: #6D94C5;
+            color: #1F6FEB;
         }
 
         .header-user span {
-            color: #333;
+            color: #24292F;
             font-weight: 400;
         }
 
         .btn-setting {
-            background-color: #6D94C5;
+            background-color: #DA3633;
             color: white;
             border: none;
             padding: 12px 25px;
@@ -157,7 +172,7 @@
         }
 
         .btn-setting:hover {
-            background-color: #5a7ba8;
+            background-color: #F85149;
         }
 
         /* Sensor Data Section */
@@ -169,20 +184,22 @@
         }
 
         .sensor-box {
-            background-color: white;
+            background-color: #FFFFFF;
             padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-            border-top: 4px solid #6D94C5;
-            transition: transform 0.3s;
+            border-radius: 12px;
+            border: 1px solid #E1E4E8;
+            border-top: 3px solid #58A6FF;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .sensor-box:hover {
-            transform: translateY(-5px);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(88, 166, 255, 0.2);
         }
 
         .sensor-label {
-            color: #666;
+            color: #57606A;
             font-size: 14px;
             margin-bottom: 10px;
             text-transform: uppercase;
@@ -192,12 +209,12 @@
         .sensor-value {
             font-size: 32px;
             font-weight: bold;
-            color: #6D94C5;
+            color: #1F6FEB;
             margin-bottom: 5px;
         }
 
         .sensor-unit {
-            color: #999;
+            color: #6E7781;
             font-size: 14px;
         }
 
@@ -210,19 +227,20 @@
         }
 
         .control-box {
-            background-color: white;
+            background-color: #FFFFFF;
             padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            border: 1px solid #E1E4E8;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .control-title {
             font-size: 18px;
             font-weight: 600;
-            color: #6D94C5;
+            color: #1F6FEB;
             margin-bottom: 20px;
             padding-bottom: 10px;
-            border-bottom: 2px solid #CBDCEB;
+            border-bottom: 2px solid #E1E4E8;
         }
 
         /* Actuator Control */
@@ -231,13 +249,14 @@
             justify-content: space-between;
             align-items: center;
             padding: 15px;
-            background-color: #F5EFE6;
+            background-color: #F6F8FA;
             border-radius: 10px;
+            border: 1px solid #E1E4E8;
         }
 
         .actuator-name {
             font-weight: 600;
-            color: #333;
+            color: #24292F;
         }
 
         .status-badge {
@@ -248,45 +267,48 @@
         }
 
         .status-on {
-            background-color: #4CAF50;
-            color: white;
+            background-color: rgba(63, 185, 80, 0.2);
+            color: #3FB950;
+            border: 1px solid #3FB950;
         }
 
         .status-off {
-            background-color: #f44336;
-            color: white;
+            background-color: rgba(248, 81, 73, 0.2);
+            color: #F85149;
+            border: 1px solid #F85149;
         }
 
         /* Fuzzy Decision */
         .fuzzy-content {
-            background-color: #CBDCEB;
+            background-color: #F6F8FA;
             padding: 20px;
             border-radius: 10px;
+            border: 1px solid #E1E4E8;
         }
 
         .fuzzy-status {
             font-size: 20px;
             font-weight: bold;
-            color: #6D94C5;
+            color: #1F6FEB;
             margin-bottom: 15px;
         }
 
         .fuzzy-recommendation {
-            color: #333;
+            color: #24292F;
             line-height: 1.6;
             margin-bottom: 10px;
         }
 
         .fuzzy-details {
             font-size: 13px;
-            color: #666;
+            color: #57606A;
             margin-top: 15px;
             padding-top: 15px;
-            border-top: 1px solid rgba(109, 148, 197, 0.3);
+            border-top: 1px solid #E1E4E8;
         }
 
         .no-data {
-            color: #999;
+            color: #6E7781;
             font-style: italic;
             text-align: center;
             padding: 20px;
@@ -298,19 +320,20 @@
         }
 
         .chart-container {
-            background-color: white;
+            background-color: #FFFFFF;
             padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            border: 1px solid #E1E4E8;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .chart-title {
             font-size: 20px;
             font-weight: 600;
-            color: #6D94C5;
+            color: #1F6FEB;
             margin-bottom: 20px;
             padding-bottom: 10px;
-            border-bottom: 2px solid #CBDCEB;
+            border-bottom: 2px solid #E1E4E8;
         }
 
         .chart-wrapper {
@@ -323,7 +346,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            background-color: #f44336;
+            background-color: #DA3633;
             color: white;
             border: none;
             padding: 12px 25px;
@@ -336,7 +359,7 @@
         }
 
         .btn-logout:hover {
-            background-color: #d32f2f;
+            background-color: #F85149;
         }
 
         .header-buttons {
@@ -350,10 +373,21 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-logo">
-                TambaQ
+                <i class="bi bi-tsunami"></i> TambaQ
             </div>
             <ul class="sidebar-menu">
-                <li class="active">Dashboard</li>
+                <li class="active">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </li>
+                <li onclick="window.location.href='/history'">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Riwayat</span>
+                </li>
+                <li>
+                    <i class="bi bi-gear"></i>
+                    <span>Pengaturan</span>
+                </li>
             </ul>
         </aside>
 
@@ -531,36 +565,36 @@
                             {
                                 label: 'pH',
                                 data: data.phData,
-                                borderColor: '#6D94C5',
-                                backgroundColor: 'rgba(109, 148, 197, 0.1)',
+                                borderColor: '#58A6FF',
+                                backgroundColor: 'rgba(88, 166, 255, 0.1)',
                                 tension: 0.4
                             },
                             {
                                 label: 'Jarak Air (cm)',
                                 data: data.waterLevelData,
-                                borderColor: '#CBDCEB',
-                                backgroundColor: 'rgba(203, 220, 235, 0.1)',
+                                borderColor: '#3FB950',
+                                backgroundColor: 'rgba(63, 185, 80, 0.1)',
                                 tension: 0.4
                             },
                             {
                                 label: 'TDS (ppm)',
                                 data: data.tdsData,
-                                borderColor: '#F5EFE6',
-                                backgroundColor: 'rgba(245, 239, 230, 0.1)',
+                                borderColor: '#F2994A',
+                                backgroundColor: 'rgba(242, 153, 74, 0.1)',
                                 tension: 0.4
                             },
                             {
                                 label: 'Salinitas (ppt)',
                                 data: data.salinityData,
-                                borderColor: '#4CAF50',
-                                backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                                borderColor: '#BB86FC',
+                                backgroundColor: 'rgba(187, 134, 252, 0.1)',
                                 tension: 0.4
                             },
                             {
                                 label: 'Kekeruhan (NTU)',
                                 data: data.turbidityData,
-                                borderColor: '#FF9800',
-                                backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                                borderColor: '#F85149',
+                                backgroundColor: 'rgba(248, 81, 73, 0.1)',
                                 tension: 0.4
                             }
                         ]
@@ -571,6 +605,9 @@
                         plugins: {
                             legend: {
                                 position: 'top',
+                                labels: {
+                                    color: '#24292F'
+                                }
                             },
                             title: {
                                 display: false
@@ -578,7 +615,21 @@
                         },
                         scales: {
                             y: {
-                                beginAtZero: false
+                                beginAtZero: false,
+                                grid: {
+                                    color: '#E1E4E8'
+                                },
+                                ticks: {
+                                    color: '#57606A'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: '#E1E4E8'
+                                },
+                                ticks: {
+                                    color: '#57606A'
+                                }
                             }
                         }
                     }

@@ -20,7 +20,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #6D94C5 0%, #CBDCEB 100%);
+            background-color: #0D1117;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -29,16 +29,16 @@
         }
 
         .login-container {
-            background-color: #F5EFE6;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            background-color: #FFFFFF;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
             overflow: hidden;
             width: 100%;
             max-width: 450px;
         }
 
         .login-header {
-            background-color: #6D94C5;
+            background: linear-gradient(135deg, #58A6FF 0%, #1F6FEB 100%);
             color: white;
             padding: 40px 30px;
             text-align: center;
@@ -52,7 +52,7 @@
 
         .login-header p {
             font-size: 16px;
-            opacity: 0.9;
+            opacity: 0.95;
         }
 
         .login-body {
@@ -74,17 +74,19 @@
         .form-input {
             width: 100%;
             padding: 12px 15px;
-            border: 2px solid #CBDCEB;
+            border: 2px solid #E1E4E8;
             border-radius: 10px;
             font-size: 14px;
             transition: all 0.3s;
-            background-color: white;
+            background-color: #F6F8FA;
+            color: #24292F;
         }
 
         .form-input:focus {
             outline: none;
-            border-color: #6D94C5;
-            box-shadow: 0 0 0 3px rgba(109, 148, 197, 0.1);
+            border-color: #58A6FF;
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
         }
 
         .password-wrapper {
@@ -99,13 +101,13 @@
             background: none;
             border: none;
             cursor: pointer;
-            color: #6D94C5;
+            color: #58A6FF;
             font-size: 18px;
             padding: 5px;
         }
 
         .password-toggle:hover {
-            color: #5a7ba8;
+            color: #1F6FEB;
         }
 
         .remember-wrapper {
@@ -119,45 +121,47 @@
             height: 18px;
             margin-right: 8px;
             cursor: pointer;
+            accent-color: #58A6FF;
         }
 
         .remember-wrapper label {
             font-size: 14px;
-            color: #666;
+            color: #57606A;
             cursor: pointer;
         }
 
         .btn-login {
             width: 100%;
             padding: 14px;
-            background-color: #6D94C5;
+            background: linear-gradient(135deg, #58A6FF 0%, #1F6FEB 100%);
             color: white;
             border: none;
             border-radius: 10px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
         }
 
         .btn-login:hover {
-            background-color: #5a7ba8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(88, 166, 255, 0.4);
         }
 
         .login-footer {
             text-align: center;
             margin-top: 25px;
             padding-top: 25px;
-            border-top: 1px solid #CBDCEB;
+            border-top: 1px solid #E1E4E8;
         }
 
         .login-footer p {
-            color: #666;
+            color: #57606A;
             font-size: 14px;
         }
 
         .login-footer a {
-            color: #6D94C5;
+            color: #58A6FF;
             text-decoration: none;
             font-weight: 600;
         }
