@@ -72,6 +72,8 @@
             top: 0;
             box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
         }
 
         .sidebar-logo {
@@ -85,6 +87,7 @@
 
         .sidebar-menu {
             list-style: none;
+            flex: 1;
         }
 
         .sidebar-menu li {
@@ -115,6 +118,39 @@
             font-weight: 600;
         }
 
+        .sidebar-logout {
+            padding: 20px;
+            border-top: 2px solid #e0e7ff;
+            margin-top: auto;
+        }
+
+        .sidebar-logout form {
+            margin: 0;
+        }
+
+        .sidebar-logout .btn-logout {
+            width: 100%;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(250, 112, 154, 0.4);
+        }
+
+        .sidebar-logout .btn-logout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(250, 112, 154, 0.6);
+        }
+
         /* Main Content */
         .main-content {
             margin-left: 250px;
@@ -142,26 +178,6 @@
             font-size: 28px;
             font-weight: 600;
             color: #667eea;
-        }
-
-        .btn-logout {
-            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 15px rgba(250, 112, 154, 0.4);
-        }
-
-        .btn-logout:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(250, 112, 154, 0.6);
         }
 
         /* Stats Cards Row */
@@ -394,11 +410,16 @@
                     <i class="bi bi-clock-history"></i>
                     <span>Riwayat</span>
                 </li>
-                <li>
-                    <i class="bi bi-gear"></i>
-                    <span>Pengaturan</span>
-                </li>
             </ul>
+            <div class="sidebar-logout">
+                <form method="POST" action="/logout">
+                    @csrf
+                    <button type="submit" class="btn-logout">
+                        <i class="bi bi-box-arrow-left"></i>
+                        Logout
+                    </button>
+                </form>
+            </div>
         </div>
 
         <!-- Main Content -->
@@ -408,13 +429,6 @@
                 <div class="header-title">
                     <i class="bi bi-clock-history"></i> Riwayat Device & Alerts
                 </div>
-                <form method="POST" action="/logout" style="margin: 0;">
-                    @csrf
-                    <button type="submit" class="btn-logout">
-                        <i class="bi bi-box-arrow-right"></i>
-                        Logout
-                    </button>
-                </form>
             </div>
 
             <!-- Stats Row -->
@@ -547,16 +561,22 @@
         // Alerts Frequency Chart
         const ctx = document.getElementById('alertsChart').getContext('2d');
         const alertsChart = new Chart(ctx, {
-            type: 'bar',
+            type: 'line',
             data: {
                 labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
                 datasets: [{
                     label: 'Alerts',
                     data: [12, 19, 15, 25, 22, 18, 24],
-                    backgroundColor: 'rgba(102, 126, 234, 0.8)',
                     borderColor: '#667eea',
-                    borderWidth: 1,
-                    borderRadius: 6
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#667eea',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
                 }]
             },
             options: {

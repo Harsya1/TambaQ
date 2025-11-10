@@ -100,6 +100,8 @@
             overflow-x: hidden;
             -ms-overflow-style: none;
             scrollbar-width: none;
+            display: flex;
+            flex-direction: column;
         }
 
         .sidebar::-webkit-scrollbar {
@@ -119,6 +121,7 @@
 
         .sidebar-menu {
             list-style: none;
+            flex: 1;
         }
 
         .sidebar-menu li {
@@ -147,6 +150,39 @@
             border-left-color: #667eea;
             color: #667eea;
             font-weight: 600;
+        }
+
+        .sidebar-logout {
+            padding: 20px;
+            border-top: 2px solid #e0e7ff;
+            margin-top: auto;
+        }
+
+        .sidebar-logout form {
+            margin: 0;
+        }
+
+        .sidebar-logout .btn-logout {
+            width: 100%;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(250, 112, 154, 0.4);
+        }
+
+        .sidebar-logout .btn-logout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(250, 112, 154, 0.6);
         }
 
         /* Main Content */
@@ -409,34 +445,6 @@
             position: relative;
             height: 400px;
         }
-
-        /* Logout Button */
-        .btn-logout {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s;
-            margin-left: 10px;
-            box-shadow: 0 4px 15px rgba(250, 112, 154, 0.4);
-        }
-
-        .btn-logout:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(250, 112, 154, 0.6);
-        }
-
-        .header-buttons {
-            display: flex;
-            gap: 10px;
-        }
     </style>
 </head>
 <body>
@@ -455,11 +463,16 @@
                     <i class="bi bi-clock-history"></i>
                     <span>Riwayat</span>
                 </li>
-                <li>
-                    <i class="bi bi-gear"></i>
-                    <span>Pengaturan</span>
-                </li>
             </ul>
+            <div class="sidebar-logout">
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="btn-logout">
+                        <i class="bi bi-box-arrow-left"></i>
+                        Logout
+                    </button>
+                </form>
+            </div>
         </aside>
 
         <!-- Main Content -->
@@ -468,16 +481,6 @@
             <section class="header">
                 <div class="header-user">
                     Selamat Datang, <span>{{ $userName }}</span>
-                </div>
-                <div class="header-buttons">
-                    <button class="btn-setting">⚙ Pengaturan</button>
-                    <form method="POST" action="{{ route('logout') }}" style="display: inline;">
-                        @csrf
-                        <button type="submit" class="btn-logout">
-                            <i class="bi bi-box-arrow-left"></i>
-                            Logout
-                        </button>
-                    </form>
                 </div>
             </section>
 
