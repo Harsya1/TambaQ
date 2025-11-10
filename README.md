@@ -1,61 +1,176 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# TambaQ - Smart Shrimp Pond Monitoring System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A web-based monitoring system for shrimp pond water quality using **Fuzzy Mamdani Logic** for automated aerator control.
 
-## About Laravel
+![TambaQ Dashboard](https://img.shields.io/badge/Laravel-11-red?logo=laravel) ![PHP](https://img.shields.io/badge/PHP-8.2+-blue?logo=php) ![License](https://img.shields.io/badge/License-MIT-green)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🎯 Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Real-time Monitoring** - Live sensor data updates every 3 seconds
+- **Fuzzy Mamdani AI** - 10 rules for intelligent water quality assessment
+- **Automated Control** - Automatic aerator ON/OFF based on AI decisions
+- **Data Visualization** - 24-hour historical data charts with Chart.js
+- **Secure Authentication** - Login/Register system with validation
+- **Responsive Design** - Clean UI with custom color theme
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 📊 Monitored Parameters
 
-## Learning Laravel
+| Parameter | Range | Status Levels |
+|-----------|-------|---------------|
+| **pH** | 0-14 | Low, Normal, High |
+| **TDS** | 0-1000 ppm | Low, Normal, High |
+| **Turbidity** | 0-100 NTU | Clear, Moderate, Turbid |
+| **Water Level** | 0-200 cm | Low, Normal, High |
+| **Salinity** | 0-40 ppt | Low, Normal, High |
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 🧠 Fuzzy Logic System
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+The system uses **Fuzzy Mamdani** with 10 decision rules:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```
+Rule 1: IF pH=Low AND TDS=Low → Quality=POOR → Aerator ON
+Rule 2: IF pH=Normal AND TDS=Normal AND Turbidity=Clear → Quality=GOOD → Aerator OFF
+Rule 3: IF Turbidity=Turbid AND Salinity=High → Quality=POOR → Aerator ON
+...
+(See FUZZY_LOGIC_DOCUMENTATION.md for complete rules)
+```
 
-## Laravel Sponsors
+## 🚀 Quick Start
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Prerequisites
+- PHP 8.2+
+- Composer
+- Node.js & NPM
+- MySQL/SQLite
 
-### Premium Partners
+### Installation
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```bash
+# Clone repository
+git clone https://github.com/Harsya1/TambaQ.git
+cd TambaQ
 
-## Contributing
+# Install dependencies
+composer install
+npm install
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# Setup environment
+cp .env.example .env
+php artisan key:generate
 
-## Code of Conduct
+# Configure database in .env
+DB_CONNECTION=sqlite
+DB_DATABASE=/absolute/path/to/database.sqlite
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# Run migrations & seeders
+php artisan migrate --seed
 
-## Security Vulnerabilities
+# Build assets
+npm run build
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Start server
+php artisan serve
+```
 
-## License
+Visit: `http://localhost:8000`
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 🔑 Default Credentials
+
+```
+Email: admin@tambaq.com
+Password: password123
+```
+
+## 📁 Project Structure
+
+```
+app/
+├── Http/Controllers/
+│   ├── AuthController.php      # Authentication logic
+│   └── DashboardController.php # Dashboard & API endpoints
+├── Models/
+│   ├── User.php
+│   ├── SensorReading.php
+│   ├── Actuator.php
+│   └── FuzzyDecision.php
+└── Services/
+    └── FuzzyMamdaniService.php # Fuzzy logic engine
+
+resources/views/
+├── dashboard.blade.php         # Main monitoring dashboard
+└── auth/
+    ├── login.blade.php
+    └── register.blade.php
+
+database/
+├── migrations/                 # Database schema
+└── seeders/
+    └── DatabaseSeeder.php      # Sample data generator
+```
+
+## 🎨 Color Theme
+
+- Primary: `#6D94C5` (Soft Blue)
+- Secondary: `#CBDCEB` (Light Blue)
+- Background: `#F5EFE6` (Cream)
+
+## 📡 API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/dashboard` | Main dashboard view |
+| `GET` | `/api/latest-sensor-data` | Latest sensor readings |
+| `GET` | `/api/chart-data` | 24h historical data |
+| `POST` | `/api/process-fuzzy-logic` | Trigger AI evaluation |
+| `POST` | `/login` | User authentication |
+| `POST` | `/register` | User registration |
+
+## 🛠️ Tech Stack
+
+- **Backend:** Laravel 11, PHP 8.2
+- **Frontend:** Blade Templates, Bootstrap 5, Bootstrap Icons
+- **Charts:** Chart.js
+- **Database:** MySQL/SQLite with Eloquent ORM
+- **AI Engine:** Custom Fuzzy Mamdani Implementation
+
+## 📖 Documentation
+
+- [Fuzzy Logic Documentation](FUZZY_LOGIC_DOCUMENTATION.md) - Complete rule definitions and membership functions
+
+## 🧪 Testing
+
+```bash
+# Run tests
+php artisan test
+
+# Generate sample data
+php artisan db:seed
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 👨‍💻 Author
+
+**Harsya**
+- GitHub: [@Harsya1](https://github.com/Harsya1)
+
+## 🙏 Acknowledgments
+
+- Laravel Framework
+- Chart.js for visualization
+- Bootstrap Icons
+- Fuzzy Logic Mamdani algorithm research
+
+---
+
+**TambaQ** - Intelligent Shrimp Farming, Simplified 🦐
