@@ -20,7 +20,7 @@ class AnalyticsController extends Controller
             ->orderBy('recorded_at')
             ->get()
             ->groupBy(function($item) {
-                return Carbon::parse($item->recorded_at)->format('Y-m-d H');
+                return Carbon::parse($item->recorded_at)->format('Y-m-d');
             })
             ->map(function($group) {
                 return [
@@ -28,12 +28,6 @@ class AnalyticsController extends Controller
                     'ph_avg' => round($group->avg('ph_value'), 2),
                     'tds_avg' => round($group->avg('tds_value'), 2),
                     'turbidity_avg' => round($group->avg('turbidity'), 2),
-                    'ph_min' => round($group->min('ph_value'), 2),
-                    'ph_max' => round($group->max('ph_value'), 2),
-                    'tds_min' => round($group->min('tds_value'), 2),
-                    'tds_max' => round($group->max('tds_value'), 2),
-                    'turbidity_min' => round($group->min('turbidity'), 2),
-                    'turbidity_max' => round($group->max('turbidity'), 2),
                 ];
             });
 
@@ -46,7 +40,7 @@ class AnalyticsController extends Controller
         $dataCollection = collect($data);
         
         $labels = $dataCollection->keys()->map(function($key) {
-            return Carbon::parse($key)->format('d M H:i');
+            return Carbon::parse($key)->format('d M');
         })->values()->toArray();
 
         return response()->json([
@@ -353,27 +347,14 @@ class AnalyticsController extends Controller
         for ($i = 0; $i < $days; $i++) {
             $date = $now->copy()->subDays($days - $i - 1);
             
-            if ($days <= 7) {
-                // Hourly data for 7 days
-                for ($h = 0; $h < 24; $h++) {
-                    $key = $date->copy()->setHour($h)->format('Y-m-d H');
-                    $data[$key] = [
-                        'score' => rand(70, 95) + (rand(0, 99) / 100),
-                        'ph_avg' => 7.0 + (rand(-20, 50) / 100),
-                        'tds_avg' => 300 + rand(-50, 100),
-                        'turbidity_avg' => 10 + rand(0, 50) / 10,
-                    ];
-                }
-            } else {
-                // Daily data for 30 days
-                $key = $date->format('Y-m-d');
-                $data[$key] = [
-                    'score' => rand(70, 95) + (rand(0, 99) / 100),
-                    'ph_avg' => 7.0 + (rand(-20, 50) / 100),
-                    'tds_avg' => 300 + rand(-50, 100),
-                    'turbidity_avg' => 10 + rand(0, 50) / 10,
-                ];
-            }
+            // Daily data for both 7 and 30 days
+            $key = $date->format('Y-m-d');
+            $data[$key] = [
+                'score' => rand(70, 95) + (rand(0, 99) / 100),
+                'ph_avg' => 7.0 + (rand(-20, 50) / 100),
+                'tds_avg' => 300 + rand(-50, 100),
+                'turbidity_avg' => 10 + rand(0, 50) / 10,
+            ];
         }
 
         return $data;

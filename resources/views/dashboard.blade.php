@@ -1012,14 +1012,20 @@
             
             // Refresh chart setiap 30 detik
             setInterval(loadChartData, 30000);
+        });
 
-            // Load analytics data dengan delay untuk memastikan DOM ready
+        // Load analytics setelah window fully loaded (termasuk Chart.js)
+        window.addEventListener('load', function() {
+            console.log('Window fully loaded, initializing analytics...');
+            
+            // Wait a bit more to ensure everything is ready
             setTimeout(() => {
+                console.log('Loading trend data for 7 days...');
                 loadTrendData('7days');
                 loadCorrelationData();
                 loadForecastData();
                 setDefaultExportDates();
-            }, 500);
+            }, 1000);
 
             // Refresh analytics every 5 minutes
             setInterval(() => {
@@ -1033,6 +1039,8 @@
         // Analytics: Trend Chart
         let trendChart;
         async function loadTrendData(period) {
+            console.log(`loadTrendData called with period: ${period}`);
+            
             try {
                 // Check if canvas exists
                 const canvas = document.getElementById('trendChart');
@@ -1040,6 +1048,8 @@
                     console.error('Trend chart canvas not found');
                     return;
                 }
+                
+                console.log('Canvas found, fetching data...');
 
                 const response = await fetch(`/api/trend/${period}`);
                 
@@ -1049,14 +1059,18 @@
                 
                 const data = await response.json();
                 
-                console.log('Trend data loaded:', data); // Debug log
+                console.log(`Trend data loaded for ${period}:`, data);
+                console.log('Labels count:', data.labels ? data.labels.length : 0);
+                console.log('Scores count:', data.scores ? data.scores.length : 0);
                 
                 const ctx = canvas.getContext('2d');
                 
                 if (trendChart) {
+                    console.log('Destroying existing chart...');
                     trendChart.destroy();
                 }
                 
+                console.log('Creating new chart...');
                 trendChart = new Chart(ctx, {
                     type: 'line',
                     data: {
@@ -1104,6 +1118,8 @@
                         }
                     }
                 });
+                
+                console.log('Chart created successfully!');
             } catch (error) {
                 console.error('Error loading trend data:', error);
             }
