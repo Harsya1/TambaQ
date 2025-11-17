@@ -1013,11 +1013,13 @@
             // Refresh chart setiap 30 detik
             setInterval(loadChartData, 30000);
 
-            // Load analytics data
-            loadTrendData('7days');
-            loadCorrelationData();
-            loadForecastData();
-            setDefaultExportDates();
+            // Load analytics data dengan delay untuk memastikan DOM ready
+            setTimeout(() => {
+                loadTrendData('7days');
+                loadCorrelationData();
+                loadForecastData();
+                setDefaultExportDates();
+            }, 500);
 
             // Refresh analytics every 5 minutes
             setInterval(() => {
@@ -1032,10 +1034,24 @@
         let trendChart;
         async function loadTrendData(period) {
             try {
+                // Check if canvas exists
+                const canvas = document.getElementById('trendChart');
+                if (!canvas) {
+                    console.error('Trend chart canvas not found');
+                    return;
+                }
+
                 const response = await fetch(`/api/trend/${period}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
-                const ctx = document.getElementById('trendChart').getContext('2d');
+                console.log('Trend data loaded:', data); // Debug log
+                
+                const ctx = canvas.getContext('2d');
                 
                 if (trendChart) {
                     trendChart.destroy();
