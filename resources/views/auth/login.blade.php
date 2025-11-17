@@ -385,6 +385,7 @@
 
                 <div class="login-footer">
                     <p>Belum punya akun? <a href="{{ route('register') }}">Daftar disini</a></p>
+                    <p style="margin-top: 10px;"><a href="{{ route('password.forgot') }}">Lupa Password?</a></p>
                 </div>
             </form>
         </div>
