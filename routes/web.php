@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AnalyticsController;
 
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -21,4 +22,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/sensor/latest', [DashboardController::class, 'getLatestSensorData'])->name('api.sensor.latest');
     Route::get('/api/sensor/chart', [DashboardController::class, 'getChartData'])->name('api.sensor.chart');
     Route::get('/api/history-stats', [DashboardController::class, 'getHistoryStats'])->name('api.history.stats');
+    
+    // Analytics API Routes
+    Route::get('/api/trend/7days', [AnalyticsController::class, 'getTrend7Days'])->name('api.trend.7days');
+    Route::get('/api/trend/30days', [AnalyticsController::class, 'getTrend30Days'])->name('api.trend.30days');
+    Route::get('/api/correlation', [AnalyticsController::class, 'getCorrelation'])->name('api.correlation');
+    Route::get('/api/forecast', [AnalyticsController::class, 'getForecast'])->name('api.forecast');
+    Route::get('/api/export/csv', [AnalyticsController::class, 'exportCsv'])->name('api.export.csv');
+    Route::get('/api/export/pdf', [AnalyticsController::class, 'exportPdf'])->name('api.export.pdf');
 });
