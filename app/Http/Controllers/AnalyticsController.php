@@ -42,16 +42,19 @@ class AnalyticsController extends Controller
             $data = $this->generateDummyTrendData(7);
         }
 
-        $labels = $data->keys()->map(function($key) {
+        // Ensure we have collection and extract values properly
+        $dataCollection = collect($data);
+        
+        $labels = $dataCollection->keys()->map(function($key) {
             return Carbon::parse($key)->format('d M H:i');
-        })->values();
+        })->values()->toArray();
 
         return response()->json([
             'labels' => $labels,
-            'scores' => $data->pluck('score')->values(),
-            'ph_data' => $data->pluck('ph_avg')->values(),
-            'tds_data' => $data->pluck('tds_avg')->values(),
-            'turbidity_data' => $data->pluck('turbidity_avg')->values(),
+            'scores' => $dataCollection->pluck('score')->values()->toArray(),
+            'ph_data' => $dataCollection->pluck('ph_avg')->values()->toArray(),
+            'tds_data' => $dataCollection->pluck('tds_avg')->values()->toArray(),
+            'turbidity_data' => $dataCollection->pluck('turbidity_avg')->values()->toArray(),
         ]);
     }
 
@@ -82,16 +85,19 @@ class AnalyticsController extends Controller
             $data = $this->generateDummyTrendData(30);
         }
 
-        $labels = $data->keys()->map(function($key) {
+        // Ensure we have collection and extract values properly
+        $dataCollection = collect($data);
+        
+        $labels = $dataCollection->keys()->map(function($key) {
             return Carbon::parse($key)->format('d M');
-        })->values();
+        })->values()->toArray();
 
         return response()->json([
             'labels' => $labels,
-            'scores' => $data->pluck('score')->values(),
-            'ph_data' => $data->pluck('ph_avg')->values(),
-            'tds_data' => $data->pluck('tds_avg')->values(),
-            'turbidity_data' => $data->pluck('turbidity_avg')->values(),
+            'scores' => $dataCollection->pluck('score')->values()->toArray(),
+            'ph_data' => $dataCollection->pluck('ph_avg')->values()->toArray(),
+            'tds_data' => $dataCollection->pluck('tds_avg')->values()->toArray(),
+            'turbidity_data' => $dataCollection->pluck('turbidity_avg')->values()->toArray(),
         ]);
     }
 
