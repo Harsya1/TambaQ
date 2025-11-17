@@ -445,6 +445,233 @@
             position: relative;
             height: 400px;
         }
+
+        /* Analytics Widgets */
+        .analytics-section {
+            margin-top: 30px;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .analytics-box {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+        }
+
+        .analytics-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e7ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Trend Toggle */
+        .trend-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .trend-toggle button {
+            flex: 1;
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: transparent;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .trend-toggle button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .trend-toggle button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Correlation Cards */
+        .correlation-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .correlation-card {
+            padding: 15px;
+            border-radius: 10px;
+            background: #f8faff;
+            border: 1px solid #e0e7ff;
+            transition: all 0.3s;
+        }
+
+        .correlation-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .correlation-label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .correlation-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .correlation-level {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            display: inline-block;
+            font-weight: 600;
+        }
+
+        .corr-low { 
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+        
+        .corr-moderate { 
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .corr-high { 
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+
+        /* Forecast Cards */
+        .forecast-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .forecast-card {
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-radius: 10px;
+            border: 2px solid #e0e7ff;
+            text-align: center;
+        }
+
+        .forecast-sensor {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .forecast-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .forecast-unit {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .confidence-badge {
+            margin-top: 15px;
+            padding: 6px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .conf-high {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+
+        .conf-medium {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .conf-low {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+
+        /* Export Section */
+        .export-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .date-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 15px;
+            border: 2px solid #e0e7ff;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .date-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .export-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .export-csv {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+
+        .export-pdf {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
     </style>
 </head>
 <body>
@@ -564,6 +791,69 @@
                     <div class="chart-title">Riwayat Data Sensor (24 Jam)</div>
                     <div class="chart-wrapper">
                         <canvas id="sensorChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Analytics Section -->
+            <section class="analytics-section">
+                <!-- Trend Score Widget -->
+                <div class="analytics-box" style="margin-bottom: 30px;">
+                    <div class="analytics-title">
+                        <i class="bi bi-graph-up-arrow"></i>
+                        Water Quality Score Trend
+                    </div>
+                    <div class="trend-toggle">
+                        <button class="active" id="btn7days" onclick="switchTrend('7days')">7 Hari</button>
+                        <button id="btn30days" onclick="switchTrend('30days')">30 Hari</button>
+                    </div>
+                    <div class="chart-wrapper" style="height: 300px;">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Two Column Layout for Correlation & Forecast -->
+                <div class="analytics-grid">
+                    <!-- Correlation Analysis Widget -->
+                    <div class="analytics-box">
+                        <div class="analytics-title">
+                            <i class="bi bi-diagram-3"></i>
+                            Correlation Analysis
+                        </div>
+                        <div class="correlation-grid" id="correlationGrid">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Forecast Widget -->
+                    <div class="analytics-box">
+                        <div class="analytics-title">
+                            <i class="bi bi-lightning"></i>
+                            Forecast (3 Hours)
+                        </div>
+                        <div class="forecast-grid" id="forecastGrid">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export Report Widget -->
+                <div class="analytics-box">
+                    <div class="analytics-title">
+                        <i class="bi bi-download"></i>
+                        Export Reports
+                    </div>
+                    <div class="export-controls">
+                        <input type="date" class="date-input" id="exportStartDate" />
+                        <input type="date" class="date-input" id="exportEndDate" />
+                        <button class="export-btn export-csv" onclick="exportData('csv')">
+                            <i class="bi bi-file-earmark-spreadsheet"></i>
+                            Export CSV
+                        </button>
+                        <button class="export-btn export-pdf" onclick="exportData('pdf')">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                            Export PDF
+                        </button>
                     </div>
                 </div>
             </section>
@@ -723,6 +1013,235 @@
             // Refresh chart setiap 30 detik
             setInterval(loadChartData, 30000);
         });
+
+        // Load analytics setelah window fully loaded (termasuk Chart.js)
+        window.addEventListener('load', function() {
+            console.log('Window fully loaded, initializing analytics...');
+            
+            // Wait a bit more to ensure everything is ready
+            setTimeout(() => {
+                console.log('Loading trend data for 7 days...');
+                loadTrendData('7days');
+                loadCorrelationData();
+                loadForecastData();
+                setDefaultExportDates();
+            }, 1000);
+
+            // Refresh analytics every 5 minutes
+            setInterval(() => {
+                const activeTrend = document.querySelector('.trend-toggle button.active').id === 'btn7days' ? '7days' : '30days';
+                loadTrendData(activeTrend);
+                loadCorrelationData();
+                loadForecastData();
+            }, 300000);
+        });
+
+        // Analytics: Trend Chart
+        let trendChart;
+        async function loadTrendData(period) {
+            console.log(`loadTrendData called with period: ${period}`);
+            
+            try {
+                // Check if canvas exists
+                const canvas = document.getElementById('trendChart');
+                if (!canvas) {
+                    console.error('Trend chart canvas not found');
+                    return;
+                }
+                
+                console.log('Canvas found, fetching data...');
+
+                const response = await fetch(`/api/trend/${period}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                console.log(`Trend data loaded for ${period}:`, data);
+                console.log('Labels count:', data.labels ? data.labels.length : 0);
+                console.log('Scores count:', data.scores ? data.scores.length : 0);
+                
+                const ctx = canvas.getContext('2d');
+                
+                if (trendChart) {
+                    console.log('Destroying existing chart...');
+                    trendChart.destroy();
+                }
+                
+                console.log('Creating new chart...');
+                trendChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Water Quality Score',
+                            data: data.scores,
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 3,
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                grid: {
+                                    color: '#e0e7ff'
+                                },
+                                ticks: {
+                                    color: '#666'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: '#e0e7ff'
+                                },
+                                ticks: {
+                                    color: '#666',
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                console.log('Chart created successfully!');
+            } catch (error) {
+                console.error('Error loading trend data:', error);
+            }
+        }
+
+        function switchTrend(period) {
+            // Update button states
+            document.getElementById('btn7days').classList.remove('active');
+            document.getElementById('btn30days').classList.remove('active');
+            document.getElementById(`btn${period}`).classList.add('active');
+            
+            // Load new data
+            loadTrendData(period);
+        }
+
+        // Analytics: Correlation
+        async function loadCorrelationData() {
+            try {
+                const response = await fetch('/api/correlation');
+                const data = await response.json();
+                
+                const grid = document.getElementById('correlationGrid');
+                grid.innerHTML = '';
+                
+                const correlations = [
+                    { label: 'pH - TDS', value: data.pH_TDS, key: 'pH_TDS' },
+                    { label: 'TDS - Turbidity', value: data.TDS_Turbidity, key: 'TDS_Turbidity' },
+                    { label: 'pH - Turbidity', value: data.pH_Turbidity, key: 'pH_Turbidity' },
+                    { label: 'Salinity - TDS', value: data.Salinity_TDS, key: 'Salinity_TDS' }
+                ];
+                
+                correlations.forEach(corr => {
+                    const level = getCorrelationLevel(Math.abs(corr.value));
+                    const card = document.createElement('div');
+                    card.className = 'correlation-card';
+                    card.innerHTML = `
+                        <div class="correlation-label">${corr.label}</div>
+                        <div class="correlation-value">${corr.value.toFixed(2)}</div>
+                        <span class="correlation-level ${level.class}">${level.text}</span>
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Error loading correlation data:', error);
+            }
+        }
+
+        function getCorrelationLevel(value) {
+            if (value >= 0.6) {
+                return { class: 'corr-high', text: 'Tinggi' };
+            } else if (value >= 0.3) {
+                return { class: 'corr-moderate', text: 'Moderat' };
+            } else {
+                return { class: 'corr-low', text: 'Rendah' };
+            }
+        }
+
+        // Analytics: Forecast
+        async function loadForecastData() {
+            try {
+                const response = await fetch('/api/forecast');
+                const data = await response.json();
+                
+                const grid = document.getElementById('forecastGrid');
+                grid.innerHTML = '';
+                
+                const forecasts = [
+                    { sensor: 'pH', value: data.pH_next3h, unit: 'pH' },
+                    { sensor: 'TDS', value: data.TDS_next3h, unit: 'ppm' },
+                    { sensor: 'Turbidity', value: data.turbidity_next3h, unit: 'NTU' },
+                    { sensor: 'Salinity', value: data.salinity_next3h, unit: 'ppt' }
+                ];
+                
+                forecasts.forEach(forecast => {
+                    const card = document.createElement('div');
+                    card.className = 'forecast-card';
+                    card.innerHTML = `
+                        <div class="forecast-sensor">${forecast.sensor}</div>
+                        <div class="forecast-value">${forecast.value}</div>
+                        <div class="forecast-unit">${forecast.unit}</div>
+                    `;
+                    grid.appendChild(card);
+                });
+                
+                // Add confidence badge after all cards
+                const confidenceClass = data.confidence === 'high' ? 'conf-high' : 
+                                      data.confidence === 'medium' ? 'conf-medium' : 'conf-low';
+                const confidenceText = data.confidence === 'high' ? 'Confidence: Tinggi' : 
+                                      data.confidence === 'medium' ? 'Confidence: Sedang' : 'Confidence: Rendah';
+                
+                const badge = document.createElement('div');
+                badge.style.gridColumn = '1 / -1';
+                badge.style.textAlign = 'center';
+                badge.innerHTML = `<span class="confidence-badge ${confidenceClass}">${confidenceText}</span>`;
+                grid.appendChild(badge);
+            } catch (error) {
+                console.error('Error loading forecast data:', error);
+            }
+        }
+
+        // Analytics: Export
+        function setDefaultExportDates() {
+            const today = new Date();
+            const sevenDaysAgo = new Date(today);
+            sevenDaysAgo.setDate(today.getDate() - 7);
+            
+            document.getElementById('exportStartDate').valueAsDate = sevenDaysAgo;
+            document.getElementById('exportEndDate').valueAsDate = today;
+        }
+
+        function exportData(format) {
+            const startDate = document.getElementById('exportStartDate').value;
+            const endDate = document.getElementById('exportEndDate').value;
+            
+            if (!startDate || !endDate) {
+                alert('Pilih tanggal mulai dan akhir terlebih dahulu!');
+                return;
+            }
+            
+            const url = `/api/export/${format}?start=${startDate}&end=${endDate}`;
+            window.open(url, '_blank');
+        }
     </script>
 </body>
 </html>
