@@ -56,6 +56,11 @@ class DashboardController extends Controller
             $sensorReading->turbidity
         );
 
+        // Update salinity_ppt di sensor reading
+        $sensorReading->update([
+            'salinity_ppt' => $fuzzyResult['salinity_ppt']
+        ]);
+
         // Update atau create fuzzy decision
         FuzzyDecision::updateOrCreate(
             ['sensor_reading_id' => $sensorReading->id],
