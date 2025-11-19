@@ -52,9 +52,10 @@ class DashboardController extends Controller
             $sensorReading->turbidity
         );
 
-        // Update salinity_ppt di sensor reading
+        // Update salinity_ppt dan water_quality_score di sensor reading
         $sensorReading->update([
-            'salinity_ppt' => $fuzzyResult['salinity_ppt']
+            'salinity_ppt' => $fuzzyResult['salinity_ppt'],
+            'water_quality_score' => $fuzzyResult['water_quality_score']
         ]);
 
         // Update atau create fuzzy decision
