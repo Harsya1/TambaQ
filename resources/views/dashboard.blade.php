@@ -347,37 +347,61 @@
             border-bottom: 2px solid #e0e7ff;
         }
 
-        /* Actuator Control */
-        .actuator-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            background-color: #f8faff;
-            border-radius: 10px;
-            border: 1px solid #e0e7ff;
+        /* Water Quality Category */
+        .category-display {
+            text-align: center;
+            padding: 30px 20px;
         }
 
-        .actuator-name {
-            font-weight: 600;
-            color: #333;
+        .category-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
         }
 
-        .status-badge {
-            padding: 8px 20px;
+        .category-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .category-score {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 8px 24px;
             border-radius: 20px;
             font-weight: 600;
             font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .status-on {
+        .category-excellent {
             background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
             color: white;
-            border: none;
         }
 
-        .status-off {
+        .category-good {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .category-fair {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .category-poor {
             background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+
+        .category-critical {
+            background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%);
             color: white;
             border: none;
         }
@@ -746,18 +770,42 @@
 
             <!-- Control Section -->
             <section class="control-section">
-                <!-- Actuator Control -->
+                <!-- Water Quality Category -->
                 <div class="control-box">
-                    <div class="control-title">Kontrol Aktuator</div>
-                    @if($aerator)
-                        <div class="actuator-item">
-                            <span class="actuator-name">{{ $aerator->name }}</span>
-                            <span class="status-badge {{ $aerator->status === 'on' ? 'status-on' : 'status-off' }}">
-                                {{ $aerator->status === 'on' ? 'ON' : 'OFF' }}
-                            </span>
+                    <div class="control-title">Kategori Kualitas Air</div>
+                    @if($fuzzyDecision && $fuzzyDecision->sensorReading)
+                        @php
+                            $score = $fuzzyDecision->sensorReading->water_quality_score ?? 0;
+                            $category = 'Critical';
+                            $icon = '❌';
+                            $badgeClass = 'category-critical';
+                            
+                            if ($score >= 85) {
+                                $category = 'Excellent';
+                                $icon = '⭐';
+                                $badgeClass = 'category-excellent';
+                            } elseif ($score >= 65) {
+                                $category = 'Good';
+                                $icon = '✅';
+                                $badgeClass = 'category-good';
+                            } elseif ($score >= 45) {
+                                $category = 'Fair';
+                                $icon = '⚠️';
+                                $badgeClass = 'category-fair';
+                            } elseif ($score >= 25) {
+                                $category = 'Poor';
+                                $icon = '⚠️';
+                                $badgeClass = 'category-poor';
+                            }
+                        @endphp
+                        <div class="category-display">
+                            <div class="category-icon">{{ $icon }}</div>
+                            <div class="category-name" style="color: {{ $score >= 85 ? '#43e97b' : ($score >= 65 ? '#4facfe' : ($score >= 45 ? '#f093fb' : ($score >= 25 ? '#fa709a' : '#ff0844'))) }}">{{ $category }}</div>
+                            <div class="category-score">Score: {{ number_format($score, 1) }}/100</div>
+                            <span class="category-badge {{ $badgeClass }}">{{ $category }}</span>
                         </div>
                     @else
-                        <div class="no-data">Data aktuator tidak tersedia</div>
+                        <div class="no-data">Data kualitas air tidak tersedia</div>
                     @endif
                 </div>
 
@@ -881,12 +929,50 @@
                     document.getElementById('turbidity').textContent = data.sensor.turbidity || '-';
                 }
 
-                // Update status aktuator
-                if (data.aerator) {
-                    const statusBadge = document.querySelector('.status-badge');
-                    if (statusBadge) {
-                        statusBadge.textContent = data.aerator.status === 'on' ? 'ON' : 'OFF';
-                        statusBadge.className = 'status-badge ' + (data.aerator.status === 'on' ? 'status-on' : 'status-off');
+                // Update water quality category
+                if (data.sensor && data.sensor.water_quality_score !== undefined) {
+                    const score = parseFloat(data.sensor.water_quality_score) || 0;
+                    let category = 'Critical';
+                    let icon = '❌';
+                    let badgeClass = 'category-critical';
+                    let color = '#ff0844';
+                    
+                    if (score >= 85) {
+                        category = 'Excellent';
+                        icon = '⭐';
+                        badgeClass = 'category-excellent';
+                        color = '#43e97b';
+                    } else if (score >= 65) {
+                        category = 'Good';
+                        icon = '✅';
+                        badgeClass = 'category-good';
+                        color = '#4facfe';
+                    } else if (score >= 45) {
+                        category = 'Fair';
+                        icon = '⚠️';
+                        badgeClass = 'category-fair';
+                        color = '#f093fb';
+                    } else if (score >= 25) {
+                        category = 'Poor';
+                        icon = '⚠️';
+                        badgeClass = 'category-poor';
+                        color = '#fa709a';
+                    }
+                    
+                    const categoryIcon = document.querySelector('.category-icon');
+                    const categoryName = document.querySelector('.category-name');
+                    const categoryScore = document.querySelector('.category-score');
+                    const categoryBadge = document.querySelector('.category-badge');
+                    
+                    if (categoryIcon) categoryIcon.textContent = icon;
+                    if (categoryName) {
+                        categoryName.textContent = category;
+                        categoryName.style.color = color;
+                    }
+                    if (categoryScore) categoryScore.textContent = 'Score: ' + score.toFixed(1) + '/100';
+                    if (categoryBadge) {
+                        categoryBadge.textContent = category;
+                        categoryBadge.className = 'category-badge ' + badgeClass;
                     }
                 }
 

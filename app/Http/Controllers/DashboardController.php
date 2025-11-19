@@ -28,9 +28,6 @@ class DashboardController extends Controller
             $this->processFuzzyLogic($latestSensor);
         }
         
-        // Ambil data aktuator (Aerator)
-        $aerator = Actuator::where('name', 'Aerator')->first();
-        
         // Ambil keputusan fuzzy terbaru
         $latestFuzzyDecision = FuzzyDecision::with('sensorReading')
             ->latest()
@@ -39,13 +36,12 @@ class DashboardController extends Controller
         return view('dashboard', [
             'userName' => Auth::user()->name,
             'sensorData' => $latestSensor,
-            'aerator' => $aerator,
             'fuzzyDecision' => $latestFuzzyDecision,
         ]);
     }
 
     /**
-     * Proses fuzzy logic dan update aerator
+     * Proses fuzzy logic
      */
     private function processFuzzyLogic($sensorReading)
     {
@@ -71,12 +67,6 @@ class DashboardController extends Controller
             ]
         );
 
-        // Update status aerator berdasarkan hasil fuzzy
-        $aerator = Actuator::where('name', 'Aerator')->first();
-        if ($aerator) {
-            $aerator->update(['status' => $fuzzyResult['aerator_status']]);
-        }
-
         return $fuzzyResult;
     }
 
@@ -92,15 +82,11 @@ class DashboardController extends Controller
         // Proses fuzzy logic untuk sensor random
         $fuzzyResult = $this->processFuzzyLogic($randomSensor);
         
-        // Ambil data aktuator (sudah terupdate dari processFuzzyLogic)
-        $aerator = Actuator::where('name', 'Aerator')->first();
-        
         // Ambil keputusan fuzzy yang baru saja dibuat
         $latestFuzzyDecision = FuzzyDecision::where('sensor_reading_id', $randomSensor->id)->first();
         
         return response()->json([
             'sensor' => $randomSensor,
-            'aerator' => $aerator,
             'fuzzyDecision' => $latestFuzzyDecision,
         ]);
     }
