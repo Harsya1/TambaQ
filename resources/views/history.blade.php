@@ -553,6 +553,17 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Response Time Chart (Full Width) -->
+            <div class="device-status-box" style="margin-top: 30px;">
+                <div class="box-title">
+                    <i class="bi bi-speedometer2"></i>
+                    Average Response Time (24 Hours)
+                </div>
+                <div class="chart-container">
+                    <canvas id="responseTimeChart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -609,6 +620,85 @@
             }
         });
 
+        // Response Time Chart (24 Hours)
+        const responseTimeCtx = document.getElementById('responseTimeChart').getContext('2d');
+        let responseTimeChart = new Chart(responseTimeCtx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Response Time (ms)',
+                    data: [],
+                    backgroundColor: 'rgba(102, 126, 234, 0.6)',
+                    borderColor: '#667eea',
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    hoverBackgroundColor: 'rgba(102, 126, 234, 0.8)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Response Time: ' + context.parsed.y + ' ms';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#e0e7ff'
+                        },
+                        ticks: {
+                            color: '#666',
+                            callback: function(value) {
+                                return value + ' ms';
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Response Time (milliseconds)',
+                            color: '#666'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: '#e0e7ff'
+                        },
+                        ticks: {
+                            color: '#666'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Hour',
+                            color: '#666'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Load Response Time Data
+        function loadResponseTimeData() {
+            fetch('/api/response-time/24hours')
+                .then(response => response.json())
+                .then(data => {
+                    responseTimeChart.data.labels = data.labels;
+                    responseTimeChart.data.datasets[0].data = data.response_times;
+                    responseTimeChart.update();
+                })
+                .catch(error => console.error('Error loading response time data:', error));
+        }
+
         // Update stats dynamically (example)
         function updateStats() {
             fetch('/api/history-stats')
@@ -624,6 +714,13 @@
 
         // Initial load
         updateStats();
+        loadResponseTimeData();
+
+        // Auto refresh every 5 minutes
+        setInterval(() => {
+            loadResponseTimeData();
+            updateStats();
+        }, 300000);
     </script>
 </body>
 </html>

@@ -13,6 +13,7 @@ class WaterQualityScore extends Model
         'turbidity',
         'salinity',
         'water_level',
+        'response_time',
         'ph_min',
         'ph_max',
         'tds_min',
@@ -29,6 +30,7 @@ class WaterQualityScore extends Model
         'turbidity' => 'decimal:2',
         'salinity' => 'decimal:2',
         'water_level' => 'decimal:2',
+        'response_time' => 'decimal:2',
         'recorded_at' => 'datetime'
     ];
 }

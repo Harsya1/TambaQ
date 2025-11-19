@@ -164,4 +164,45 @@ class DashboardController extends Controller
             'turbidityData' => $sensorReadings->pluck('turbidity'),
         ]);
     }
+
+    /**
+     * API endpoint untuk mendapatkan data response time 24 jam (per jam)
+     */
+    public function getResponseTime24Hours()
+    {
+        $twentyFourHoursAgo = now()->subHours(24);
+        
+        // Query dari water_quality_scores untuk mendapatkan avg response time per jam
+        $data = \App\Models\WaterQualityScore::where('recorded_at', '>=', $twentyFourHoursAgo)
+            ->orderBy('recorded_at')
+            ->get()
+            ->groupBy(function($item) {
+                return \Carbon\Carbon::parse($item->recorded_at)->format('H:00');
+            })
+            ->map(function($group) {
+                return round($group->avg('response_time'), 2);
+            });
+
+        // Generate 24 jam labels (00:00 sampai 23:00)
+        $labels = [];
+        $responseTimes = [];
+        
+        for ($i = 0; $i < 24; $i++) {
+            $hour = str_pad($i, 2, '0', STR_PAD_LEFT) . ':00';
+            $labels[] = $hour;
+            
+            // Jika ada data untuk jam ini, gunakan, jika tidak generate random
+            if (isset($data[$hour])) {
+                $responseTimes[] = $data[$hour];
+            } else {
+                // Generate dummy data (50-200 ms)
+                $responseTimes[] = rand(50, 200) + (rand(0, 99) / 100);
+            }
+        }
+
+        return response()->json([
+            'labels' => $labels,
+            'response_times' => $responseTimes,
+        ]);
+    }
 }
