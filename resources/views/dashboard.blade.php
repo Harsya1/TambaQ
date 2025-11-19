@@ -779,28 +779,33 @@
                             $category = 'Critical';
                             $icon = '❌';
                             $badgeClass = 'category-critical';
+                            $color = '#ff0844';
                             
                             if ($score >= 85) {
                                 $category = 'Excellent';
                                 $icon = '⭐';
                                 $badgeClass = 'category-excellent';
+                                $color = '#43e97b';
                             } elseif ($score >= 65) {
                                 $category = 'Good';
                                 $icon = '✅';
                                 $badgeClass = 'category-good';
+                                $color = '#4facfe';
                             } elseif ($score >= 45) {
                                 $category = 'Fair';
                                 $icon = '⚠️';
                                 $badgeClass = 'category-fair';
+                                $color = '#f093fb';
                             } elseif ($score >= 25) {
                                 $category = 'Poor';
                                 $icon = '⚠️';
                                 $badgeClass = 'category-poor';
+                                $color = '#fa709a';
                             }
                         @endphp
                         <div class="category-display">
                             <div class="category-icon">{{ $icon }}</div>
-                            <div class="category-name" style="color: {{ $score >= 85 ? '#43e97b' : ($score >= 65 ? '#4facfe' : ($score >= 45 ? '#f093fb' : ($score >= 25 ? '#fa709a' : '#ff0844'))) }}">{{ $category }}</div>
+                            <div class="category-name" data-color="{{ $color }}">{{ $category }}</div>
                             <div class="category-score">Score: {{ number_format($score, 1) }}/100</div>
                             <span class="category-badge {{ $badgeClass }}">{{ $category }}</span>
                         </div>
@@ -912,6 +917,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script>
+        // Set category name color from data attribute on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const categoryName = document.querySelector('.category-name');
+            if (categoryName && categoryName.dataset.color) {
+                categoryName.style.color = categoryName.dataset.color;
+            }
+        });
+
         let sensorChart;
 
         // Fungsi untuk update data sensor secara real-time
