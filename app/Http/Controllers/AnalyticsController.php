@@ -200,7 +200,7 @@ class AnalyticsController extends Controller
             $file = fopen('php://output', 'w');
             
             // Header
-            fputcsv($file, ['Timestamp', 'Score', 'pH', 'TDS (ppm)', 'Turbidity (NTU)', 'Salinity (ppt)', 'Water Level (cm)']);
+            fputcsv($file, ['Timestamp', 'Score', 'pH', 'TDS (ppm)', 'Turbidity (NTU)', 'Salinity (ppt)', 'Water Level (cm)', 'AVG Response Time (ms)']);
             
             // Data rows
             foreach ($data as $row) {
@@ -212,6 +212,7 @@ class AnalyticsController extends Controller
                     $row->turbidity,
                     $row->salinity,
                     $row->water_level,
+                    $row->response_time ?? 0,
                 ]);
             }
             
@@ -240,6 +241,7 @@ class AnalyticsController extends Controller
             'avg_tds' => round($data->avg('tds_value'), 2),
             'avg_turbidity' => round($data->avg('turbidity'), 2),
             'avg_salinity' => round($data->avg('salinity'), 2),
+            'avg_response_time' => round($data->avg('response_time'), 2),
             'min_ph' => round($data->min('ph_value'), 2),
             'max_ph' => round($data->max('ph_value'), 2),
             'min_tds' => round($data->min('tds_value'), 2),

@@ -11,7 +11,9 @@ class SensorReading extends Model
         'water_level',
         'tds_value',
         'salinity',
+        'salinity_ppt',
         'turbidity',
+        'water_quality_score',
     ];
 
     protected $casts = [
@@ -19,7 +21,9 @@ class SensorReading extends Model
         'water_level' => 'decimal:2',
         'tds_value' => 'decimal:2',
         'salinity' => 'decimal:2',
+        'salinity_ppt' => 'decimal:2',
         'turbidity' => 'decimal:2',
+        'water_quality_score' => 'decimal:2',
     ];
 
     public function fuzzyDecision()

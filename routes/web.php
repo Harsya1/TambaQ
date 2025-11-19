@@ -28,6 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/sensor/latest', [DashboardController::class, 'getLatestSensorData'])->name('api.sensor.latest');
     Route::get('/api/sensor/chart', [DashboardController::class, 'getChartData'])->name('api.sensor.chart');
     Route::get('/api/history-stats', [DashboardController::class, 'getHistoryStats'])->name('api.history.stats');
+    Route::get('/api/response-time/24hours', [DashboardController::class, 'getResponseTime24Hours'])->name('api.response.time.24hours');
     
     // Analytics API Routes
     Route::get('/api/trend/7days', [AnalyticsController::class, 'getTrend7Days'])->name('api.trend.7days');

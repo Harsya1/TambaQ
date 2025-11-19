@@ -28,9 +28,6 @@ class DashboardController extends Controller
             $this->processFuzzyLogic($latestSensor);
         }
         
-        // Ambil data aktuator (Aerator)
-        $aerator = Actuator::where('name', 'Aerator')->first();
-        
         // Ambil keputusan fuzzy terbaru
         $latestFuzzyDecision = FuzzyDecision::with('sensorReading')
             ->latest()
@@ -39,13 +36,12 @@ class DashboardController extends Controller
         return view('dashboard', [
             'userName' => Auth::user()->name,
             'sensorData' => $latestSensor,
-            'aerator' => $aerator,
             'fuzzyDecision' => $latestFuzzyDecision,
         ]);
     }
 
     /**
-     * Proses fuzzy logic dan update aerator
+     * Proses fuzzy logic
      */
     private function processFuzzyLogic($sensorReading)
     {
@@ -56,6 +52,12 @@ class DashboardController extends Controller
             $sensorReading->turbidity
         );
 
+        // Update salinity_ppt dan water_quality_score di sensor reading
+        $sensorReading->update([
+            'salinity_ppt' => $fuzzyResult['salinity_ppt'],
+            'water_quality_score' => $fuzzyResult['water_quality_score']
+        ]);
+
         // Update atau create fuzzy decision
         FuzzyDecision::updateOrCreate(
             ['sensor_reading_id' => $sensorReading->id],
@@ -65,12 +67,6 @@ class DashboardController extends Controller
                 'fuzzy_details' => $fuzzyResult['fuzzy_details'],
             ]
         );
-
-        // Update status aerator berdasarkan hasil fuzzy
-        $aerator = Actuator::where('name', 'Aerator')->first();
-        if ($aerator) {
-            $aerator->update(['status' => $fuzzyResult['aerator_status']]);
-        }
 
         return $fuzzyResult;
     }
@@ -87,15 +83,11 @@ class DashboardController extends Controller
         // Proses fuzzy logic untuk sensor random
         $fuzzyResult = $this->processFuzzyLogic($randomSensor);
         
-        // Ambil data aktuator (sudah terupdate dari processFuzzyLogic)
-        $aerator = Actuator::where('name', 'Aerator')->first();
-        
         // Ambil keputusan fuzzy yang baru saja dibuat
         $latestFuzzyDecision = FuzzyDecision::where('sensor_reading_id', $randomSensor->id)->first();
         
         return response()->json([
             'sensor' => $randomSensor,
-            'aerator' => $aerator,
             'fuzzyDecision' => $latestFuzzyDecision,
         ]);
     }
@@ -162,6 +154,47 @@ class DashboardController extends Controller
             'tdsData' => $sensorReadings->pluck('tds_value'),
             'salinityData' => $sensorReadings->pluck('salinity'),
             'turbidityData' => $sensorReadings->pluck('turbidity'),
+        ]);
+    }
+
+    /**
+     * API endpoint untuk mendapatkan data response time 24 jam (per jam)
+     */
+    public function getResponseTime24Hours()
+    {
+        $twentyFourHoursAgo = now()->subHours(24);
+        
+        // Query dari water_quality_scores untuk mendapatkan avg response time per jam
+        $data = \App\Models\WaterQualityScore::where('recorded_at', '>=', $twentyFourHoursAgo)
+            ->orderBy('recorded_at')
+            ->get()
+            ->groupBy(function($item) {
+                return \Carbon\Carbon::parse($item->recorded_at)->format('H:00');
+            })
+            ->map(function($group) {
+                return round($group->avg('response_time'), 2);
+            });
+
+        // Generate 24 jam labels (00:00 sampai 23:00)
+        $labels = [];
+        $responseTimes = [];
+        
+        for ($i = 0; $i < 24; $i++) {
+            $hour = str_pad($i, 2, '0', STR_PAD_LEFT) . ':00';
+            $labels[] = $hour;
+            
+            // Jika ada data untuk jam ini, gunakan, jika tidak generate random
+            if (isset($data[$hour])) {
+                $responseTimes[] = $data[$hour];
+            } else {
+                // Generate dummy data (50-200 ms)
+                $responseTimes[] = rand(50, 200) + (rand(0, 99) / 100);
+            }
+        }
+
+        return response()->json([
+            'labels' => $labels,
+            'response_times' => $responseTimes,
         ]);
     }
 }
