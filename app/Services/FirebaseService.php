@@ -5,6 +5,7 @@ namespace App\Services;
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\Firestore;
 use Google\Cloud\Firestore\FirestoreClient;
+use Illuminate\Support\Facades\Log;
 
 class FirebaseService
 {
@@ -25,7 +26,7 @@ class FirebaseService
             $this->database = $this->firestore->database();
             
         } catch (\Exception $e) {
-            \Log::error('Firebase initialization error: ' . $e->getMessage());
+            Log::error('Firebase initialization error: ' . $e->getMessage());
             throw $e;
         }
     }
@@ -66,7 +67,7 @@ class FirebaseService
             $snapshot = $docRef->snapshot();
             
             if (!$snapshot->exists()) {
-                \Log::warning('Sensor data document not found');
+                Log::warning('Sensor data document not found');
                 return null;
             }
             
@@ -83,7 +84,7 @@ class FirebaseService
             ];
             
         } catch (\Exception $e) {
-            \Log::error('Error fetching sensor data from Firestore: ' . $e->getMessage());
+            Log::error('Error fetching sensor data from Firestore: ' . $e->getMessage());
             return null;
         }
     }
@@ -126,12 +127,12 @@ class FirebaseService
             // Add new document with auto-generated ID
             $addedDocRef = $collection->add($document);
             
-            \Log::info('Fuzzy decision saved to Firestore: ' . $addedDocRef->id());
+            Log::info('Fuzzy decision saved to Firestore: ' . $addedDocRef->id());
             
             return $addedDocRef->id();
             
         } catch (\Exception $e) {
-            \Log::error('Error saving fuzzy decision to Firestore: ' . $e->getMessage());
+            Log::error('Error saving fuzzy decision to Firestore: ' . $e->getMessage());
             return null;
         }
     }
@@ -181,7 +182,7 @@ class FirebaseService
             ];
             
         } catch (\Exception $e) {
-            \Log::error('Error getting chart data: ' . $e->getMessage());
+            Log::error('Error getting chart data: ' . $e->getMessage());
             return null;
         }
     }
