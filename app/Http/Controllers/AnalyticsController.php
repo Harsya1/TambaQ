@@ -3,52 +3,58 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\WaterQualityScore;
+use App\Services\FirebaseService;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class AnalyticsController extends Controller
 {
+    protected $firebaseService;
+
+    public function __construct(FirebaseService $firebaseService)
+    {
+        $this->firebaseService = $firebaseService;
+    }
+
     /**
      * Get 7 days trend data
      */
     public function getTrend7Days()
     {
         $sevenDaysAgo = Carbon::now()->subDays(7);
+        $now = Carbon::now();
         
-        $data = WaterQualityScore::where('recorded_at', '>=', $sevenDaysAgo)
-            ->orderBy('recorded_at')
-            ->get()
+        // Get historical data from Firestore
+        $historyData = $this->firebaseService->getHistoricalData($sevenDaysAgo, $now);
+        
+        if (empty($historyData)) {
+            return response()->json($this->generateDummyTrendData(7));
+        }
+        
+        // Group by date and calculate averages
+        $groupedData = collect($historyData)
             ->groupBy(function($item) {
-                return Carbon::parse($item->recorded_at)->format('Y-m-d');
+                return Carbon::parse($item['timestamp'])->format('Y-m-d');
             })
             ->map(function($group) {
                 return [
-                    'score' => round($group->avg('score'), 2),
-                    'ph_avg' => round($group->avg('ph_value'), 2),
-                    'tds_avg' => round($group->avg('tds_value'), 2),
-                    'turbidity_avg' => round($group->avg('turbidity'), 2),
+                    'score' => round(collect($group)->avg('water_quality_score'), 2),
+                    'ph_avg' => round(collect($group)->avg('ph_value'), 2),
+                    'tds_avg' => round(collect($group)->avg('tds_value'), 2),
+                    'turbidity_avg' => round(collect($group)->avg('turbidity'), 2),
                 ];
             });
-
-        // Generate dummy data if no data exists
-        if ($data->isEmpty()) {
-            $data = $this->generateDummyTrendData(7);
-        }
-
-        // Ensure we have collection and extract values properly
-        $dataCollection = collect($data);
         
-        $labels = $dataCollection->keys()->map(function($key) {
+        $labels = $groupedData->keys()->map(function($key) {
             return Carbon::parse($key)->format('d M');
         })->values()->toArray();
 
         return response()->json([
             'labels' => $labels,
-            'scores' => $dataCollection->pluck('score')->values()->toArray(),
-            'ph_data' => $dataCollection->pluck('ph_avg')->values()->toArray(),
-            'tds_data' => $dataCollection->pluck('tds_avg')->values()->toArray(),
-            'turbidity_data' => $dataCollection->pluck('turbidity_avg')->values()->toArray(),
+            'scores' => $groupedData->pluck('score')->values()->toArray(),
+            'ph_data' => $groupedData->pluck('ph_avg')->values()->toArray(),
+            'tds_data' => $groupedData->pluck('tds_avg')->values()->toArray(),
+            'turbidity_data' => $groupedData->pluck('turbidity_avg')->values()->toArray(),
         ]);
     }
 
@@ -58,59 +64,55 @@ class AnalyticsController extends Controller
     public function getTrend30Days()
     {
         $thirtyDaysAgo = Carbon::now()->subDays(30);
+        $now = Carbon::now();
         
-        $data = WaterQualityScore::where('recorded_at', '>=', $thirtyDaysAgo)
-            ->orderBy('recorded_at')
-            ->get()
+        // Get historical data from Firestore
+        $historyData = $this->firebaseService->getHistoricalData($thirtyDaysAgo, $now);
+        
+        if (empty($historyData)) {
+            return response()->json($this->generateDummyTrendData(30));
+        }
+        
+        // Group by date and calculate averages
+        $groupedData = collect($historyData)
             ->groupBy(function($item) {
-                return Carbon::parse($item->recorded_at)->format('Y-m-d');
+                return Carbon::parse($item['timestamp'])->format('Y-m-d');
             })
             ->map(function($group) {
                 return [
-                    'score' => round($group->avg('score'), 2),
-                    'ph_avg' => round($group->avg('ph_value'), 2),
-                    'tds_avg' => round($group->avg('tds_value'), 2),
-                    'turbidity_avg' => round($group->avg('turbidity'), 2),
+                    'score' => round(collect($group)->avg('water_quality_score'), 2),
+                    'ph_avg' => round(collect($group)->avg('ph_value'), 2),
+                    'tds_avg' => round(collect($group)->avg('tds_value'), 2),
+                    'turbidity_avg' => round(collect($group)->avg('turbidity'), 2),
                 ];
             });
-
-        // Generate dummy data if no data exists
-        if ($data->isEmpty()) {
-            $data = $this->generateDummyTrendData(30);
-        }
-
-        // Ensure we have collection and extract values properly
-        $dataCollection = collect($data);
         
-        $labels = $dataCollection->keys()->map(function($key) {
+        $labels = $groupedData->keys()->map(function($key) {
             return Carbon::parse($key)->format('d M');
         })->values()->toArray();
 
         return response()->json([
             'labels' => $labels,
-            'scores' => $dataCollection->pluck('score')->values()->toArray(),
-            'ph_data' => $dataCollection->pluck('ph_avg')->values()->toArray(),
-            'tds_data' => $dataCollection->pluck('tds_avg')->values()->toArray(),
-            'turbidity_data' => $dataCollection->pluck('turbidity_avg')->values()->toArray(),
+            'scores' => $groupedData->pluck('score')->values()->toArray(),
+            'ph_data' => $groupedData->pluck('ph_avg')->values()->toArray(),
+            'tds_data' => $groupedData->pluck('tds_avg')->values()->toArray(),
+            'turbidity_data' => $groupedData->pluck('turbidity_avg')->values()->toArray(),
         ]);
     }
 
     /**
-     * Calculate correlation between sensors
+     * Calculate correlation between sensors (24 hours)
      */
     public function getCorrelation()
     {
         $twentyFourHoursAgo = Carbon::now()->subHours(24);
+        $now = Carbon::now();
         
-        $data = WaterQualityScore::where('recorded_at', '>=', $twentyFourHoursAgo)
-            ->whereNotNull('ph_value')
-            ->whereNotNull('tds_value')
-            ->whereNotNull('turbidity')
-            ->whereNotNull('salinity')
-            ->get();
+        // Get historical data from Firestore
+        $historyData = $this->firebaseService->getHistoricalData($twentyFourHoursAgo, $now);
 
         // Generate dummy data if not enough data
-        if ($data->count() < 10) {
+        if (count($historyData) < 10) {
             return response()->json([
                 'pH_TDS' => 0.45,
                 'TDS_Turbidity' => 0.71,
@@ -121,10 +123,11 @@ class AnalyticsController extends Controller
             ]);
         }
 
+        $data = collect($historyData);
         $pH = $data->pluck('ph_value')->toArray();
         $tds = $data->pluck('tds_value')->toArray();
         $turbidity = $data->pluck('turbidity')->toArray();
-        $salinity = $data->pluck('salinity')->toArray();
+        $salinity = $data->pluck('salinity_ppt')->toArray();
 
         return response()->json([
             'pH_TDS' => round($this->calculatePearsonCorrelation($pH, $tds), 2),
@@ -142,13 +145,12 @@ class AnalyticsController extends Controller
     public function getForecast()
     {
         $sixHoursAgo = Carbon::now()->subHours(6);
+        $now = Carbon::now();
         
-        $data = WaterQualityScore::where('recorded_at', '>=', $sixHoursAgo)
-            ->orderBy('recorded_at', 'desc')
-            ->take(12) // 6 hours of data (assuming hourly records)
-            ->get();
+        // Get historical data from Firestore
+        $historyData = $this->firebaseService->getHistoricalData($sixHoursAgo, $now, 'timestamp', 12);
 
-        if ($data->count() < 3) {
+        if (count($historyData) < 3) {
             // Dummy forecast
             return response()->json([
                 'pH_next3h' => 7.12,
@@ -160,10 +162,11 @@ class AnalyticsController extends Controller
         }
 
         // Calculate Simple Moving Average
+        $data = collect($historyData);
         $phForecast = $data->avg('ph_value');
         $tdsForecast = $data->avg('tds_value');
         $turbidityForecast = $data->avg('turbidity');
-        $salinityForecast = $data->avg('salinity');
+        $salinityForecast = $data->avg('salinity_ppt');
 
         // Calculate confidence based on standard deviation
         $confidence = $this->calculateConfidence($data);
@@ -182,12 +185,11 @@ class AnalyticsController extends Controller
      */
     public function exportCsv(Request $request)
     {
-        $start = $request->query('start', Carbon::now()->subDays(7));
-        $end = $request->query('end', Carbon::now());
+        $start = Carbon::parse($request->query('start', Carbon::now()->subDays(7)));
+        $end = Carbon::parse($request->query('end', Carbon::now()));
 
-        $data = WaterQualityScore::whereBetween('recorded_at', [$start, $end])
-            ->orderBy('recorded_at')
-            ->get();
+        // Get historical data from Firestore
+        $historyData = $this->firebaseService->getHistoricalData($start, $end);
 
         $filename = 'water_quality_' . Carbon::now()->format('YmdHis') . '.csv';
         
@@ -196,23 +198,23 @@ class AnalyticsController extends Controller
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ];
 
-        $callback = function() use ($data) {
+        $callback = function() use ($historyData) {
             $file = fopen('php://output', 'w');
             
             // Header
-            fputcsv($file, ['Timestamp', 'Score', 'pH', 'TDS (ppm)', 'Turbidity (NTU)', 'Salinity (ppt)', 'Water Level (cm)', 'AVG Response Time (ms)']);
+            fputcsv($file, ['Timestamp', 'Score', 'pH', 'TDS (ppm)', 'Turbidity (NTU)', 'Salinity (ppt)', 'Water Level (cm)', 'Category']);
             
             // Data rows
-            foreach ($data as $row) {
+            foreach ($historyData as $row) {
                 fputcsv($file, [
-                    $row->recorded_at,
-                    $row->score,
-                    $row->ph_value,
-                    $row->tds_value,
-                    $row->turbidity,
-                    $row->salinity,
-                    $row->water_level,
-                    $row->response_time ?? 0,
+                    $row['timestamp'],
+                    $row['water_quality_score'],
+                    $row['ph_value'],
+                    $row['tds_value'],
+                    $row['turbidity'],
+                    $row['salinity_ppt'],
+                    $row['water_level'],
+                    $row['category'],
                 ]);
             }
             
@@ -227,21 +229,20 @@ class AnalyticsController extends Controller
      */
     public function exportPdf(Request $request)
     {
-        $start = $request->query('start', Carbon::now()->subDays(7));
-        $end = $request->query('end', Carbon::now());
+        $start = Carbon::parse($request->query('start', Carbon::now()->subDays(7)));
+        $end = Carbon::parse($request->query('end', Carbon::now()));
 
-        $data = WaterQualityScore::whereBetween('recorded_at', [$start, $end])
-            ->orderBy('recorded_at')
-            ->get();
+        // Get historical data from Firestore
+        $historyData = $this->firebaseService->getHistoricalData($start, $end);
+        $data = collect($historyData);
 
         // Calculate summary statistics
         $summary = [
-            'avg_score' => round($data->avg('score'), 2),
+            'avg_score' => round($data->avg('water_quality_score'), 2),
             'avg_ph' => round($data->avg('ph_value'), 2),
             'avg_tds' => round($data->avg('tds_value'), 2),
             'avg_turbidity' => round($data->avg('turbidity'), 2),
-            'avg_salinity' => round($data->avg('salinity'), 2),
-            'avg_response_time' => round($data->avg('response_time'), 2),
+            'avg_salinity' => round($data->avg('salinity_ppt'), 2),
             'min_ph' => round($data->min('ph_value'), 2),
             'max_ph' => round($data->max('ph_value'), 2),
             'min_tds' => round($data->min('tds_value'), 2),
