@@ -3,27 +3,21 @@
 namespace App\Services;
 
 use Kreait\Firebase\Factory;
-use Kreait\Firebase\Firestore;
-use Google\Cloud\Firestore\FirestoreClient;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 
 class FirebaseService
 {
-    protected $firestore;
-    protected $database;
+    protected $projectId;
+    protected $apiKey;
+    protected $baseUrl;
 
     public function __construct()
     {
         try {
-            // Initialize Firebase with service account
-            $serviceAccount = $this->buildServiceAccountFromEnv();
-            
-            $factory = (new Factory)
-                ->withServiceAccount($serviceAccount);
-            
-            // Get Firestore instance
-            $this->firestore = $factory->createFirestore();
-            $this->database = $this->firestore->database();
+            $this->projectId = config('firebase.credentials.project_id');
+            $this->apiKey = config('firebase.api_key');
+            $this->baseUrl = "https://firestore.googleapis.com/v1/projects/{$this->projectId}/databases/(default)/documents";
             
         } catch (\Exception $e) {
             Log::error('Firebase initialization error: ' . $e->getMessage());
@@ -32,61 +26,79 @@ class FirebaseService
     }
 
     /**
-     * Build service account array from environment variables
-     */
-    private function buildServiceAccountFromEnv()
-    {
-        return [
-            'type' => config('firebase.credentials.type'),
-            'project_id' => config('firebase.credentials.project_id'),
-            'private_key_id' => env('FIREBASE_PRIVATE_KEY_ID'),
-            'private_key' => str_replace('\\n', "\n", env('FIREBASE_PRIVATE_KEY')),
-            'client_email' => env('FIREBASE_CLIENT_EMAIL'),
-            'client_id' => env('FIREBASE_CLIENT_ID'),
-            'auth_uri' => config('firebase.credentials.auth_uri'),
-            'token_uri' => config('firebase.credentials.token_uri'),
-            'auth_provider_x509_cert_url' => config('firebase.credentials.auth_provider_x509_cert_url'),
-            'client_x509_cert_url' => env('FIREBASE_CLIENT_CERT_URL'),
-        ];
-    }
-
-    /**
-     * Get latest sensor reading from Firestore
+     * Get latest sensor reading from Firestore via REST API
      * Collection: sensorRead > Document: dataSensor
      * Fields: TDSValue, pHValue, turbidityValue, ultrasonicValue
      */
     public function getLatestSensorData()
     {
         try {
-            // Get document reference
-            $docRef = $this->database
-                ->collection('sensorRead')
-                ->document('dataSensor');
+            // Build REST API URL
+            $url = "{$this->baseUrl}/sensorRead/dataSensor";
             
-            // Get document snapshot
-            $snapshot = $docRef->snapshot();
+            // Make GET request
+            $response = Http::get($url);
             
-            if (!$snapshot->exists()) {
-                Log::warning('Sensor data document not found');
+            if (!$response->successful()) {
+                Log::warning('Sensor data document not found or request failed: ' . $response->status());
                 return null;
             }
             
-            $data = $snapshot->data();
+            $data = $response->json();
+            
+            // Check if document exists
+            if (!isset($data['fields'])) {
+                Log::warning('No fields found in sensor data document');
+                return null;
+            }
+            
+            $fields = $data['fields'];
+            
+            // Extract values from Firestore format
+            $tdsValue = $this->extractValue($fields, 'TDSValue');
+            $phValue = $this->extractValue($fields, 'pHValue');
+            $turbidityValue = $this->extractValue($fields, 'turbidityValue');
+            $ultrasonicValue = $this->extractValue($fields, 'ultrasonicValue');
             
             // Convert field names to match Laravel convention
             return [
-                'ph_value' => $data['pHValue'] ?? 0,
-                'tds_value' => $data['TDSValue'] ?? 0, // PPM
-                'turbidity' => $data['turbidityValue'] ?? 0, // NTU
-                'water_level' => $data['ultrasonicValue'] ?? 0, // cm
-                'salinity_ppt' => $this->convertTDStoSalinity($data['TDSValue'] ?? 0), // Convert to PPT
-                'timestamp' => $snapshot->updateTime() ? $snapshot->updateTime()->formatAsString() : now()->toDateTimeString(),
+                'ph_value' => $phValue,
+                'tds_value' => $tdsValue, // PPM
+                'turbidity' => $turbidityValue, // NTU
+                'water_level' => $ultrasonicValue, // cm
+                'salinity_ppt' => $this->convertTDStoSalinity($tdsValue), // Convert to PPT
+                'salinity' => $this->convertTDStoSalinity($tdsValue), // Alias for compatibility
+                'timestamp' => $data['updateTime'] ?? now()->toDateTimeString(),
             ];
             
         } catch (\Exception $e) {
             Log::error('Error fetching sensor data from Firestore: ' . $e->getMessage());
             return null;
         }
+    }
+
+    /**
+     * Extract value from Firestore field format
+     * Firestore stores values as: {"fieldName": {"doubleValue": 123.45}}
+     */
+    private function extractValue($fields, $fieldName)
+    {
+        if (!isset($fields[$fieldName])) {
+            return 0;
+        }
+        
+        $field = $fields[$fieldName];
+        
+        // Try different value types
+        if (isset($field['doubleValue'])) {
+            return (float) $field['doubleValue'];
+        } elseif (isset($field['integerValue'])) {
+            return (int) $field['integerValue'];
+        } elseif (isset($field['stringValue'])) {
+            return $field['stringValue'];
+        }
+        
+        return 0;
     }
 
     /**
@@ -101,35 +113,43 @@ class FirebaseService
     }
 
     /**
-     * Save fuzzy decision result to Firestore
+     * Save fuzzy decision result to Firestore via REST API
      * Collection: FuzzyAction
      */
     public function saveFuzzyDecision($sensorData, $fuzzyResult)
     {
         try {
-            $collection = $this->database->collection('FuzzyAction');
+            $url = "{$this->baseUrl}/FuzzyAction";
             
+            // Convert data to Firestore format
             $document = [
-                'ph_value' => $sensorData['ph_value'],
-                'tds_value' => $sensorData['tds_value'],
-                'turbidity' => $sensorData['turbidity'],
-                'water_level' => $sensorData['water_level'],
-                'salinity_ppt' => $sensorData['salinity_ppt'],
-                'water_quality_score' => $fuzzyResult['water_quality_score'],
-                'water_quality_status' => $fuzzyResult['water_quality_status'],
-                'recommendation' => $fuzzyResult['recommendation'],
-                'fuzzy_details' => $fuzzyResult['fuzzy_details'],
-                'aerator_status' => $fuzzyResult['aerator_status'],
-                'category' => $fuzzyResult['category'],
-                'timestamp' => now()->toDateTimeString(),
+                'fields' => [
+                    'ph_value' => ['doubleValue' => $sensorData['ph_value']],
+                    'tds_value' => ['doubleValue' => $sensorData['tds_value']],
+                    'turbidity' => ['doubleValue' => $sensorData['turbidity']],
+                    'water_level' => ['doubleValue' => $sensorData['water_level']],
+                    'salinity_ppt' => ['doubleValue' => $sensorData['salinity_ppt']],
+                    'water_quality_score' => ['doubleValue' => $fuzzyResult['water_quality_score']],
+                    'water_quality_status' => ['stringValue' => $fuzzyResult['water_quality_status']],
+                    'recommendation' => ['stringValue' => $fuzzyResult['recommendation']],
+                    'fuzzy_details' => ['stringValue' => $fuzzyResult['fuzzy_details']],
+                    'aerator_status' => ['stringValue' => $fuzzyResult['aerator_status']],
+                    'category' => ['stringValue' => $fuzzyResult['category']],
+                    'timestamp' => ['stringValue' => now()->toDateTimeString()],
+                ]
             ];
             
-            // Add new document with auto-generated ID
-            $addedDocRef = $collection->add($document);
+            // POST request to create new document
+            $response = Http::post($url, $document);
             
-            Log::info('Fuzzy decision saved to Firestore: ' . $addedDocRef->id());
-            
-            return $addedDocRef->id();
+            if ($response->successful()) {
+                $docId = $response->json()['name'] ?? 'unknown';
+                Log::info('Fuzzy decision saved to Firestore: ' . $docId);
+                return $docId;
+            } else {
+                Log::error('Failed to save fuzzy decision: ' . $response->status());
+                return null;
+            }
             
         } catch (\Exception $e) {
             Log::error('Error saving fuzzy decision to Firestore: ' . $e->getMessage());
@@ -185,13 +205,5 @@ class FirebaseService
             Log::error('Error getting chart data: ' . $e->getMessage());
             return null;
         }
-    }
-
-    /**
-     * Get Firestore database instance
-     */
-    public function getDatabase()
-    {
-        return $this->database;
     }
 }
