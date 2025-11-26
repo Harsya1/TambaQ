@@ -176,6 +176,7 @@ class FuzzyMamdaniService
             return [
                 'water_quality_status' => 'Unknown',
                 'water_quality_score' => 0,
+                'category' => 'Unknown', // Add for Firestore compatibility
                 'salinity_ppt' => $salinityPpt,
                 'aerator_status' => 'on',
                 'recommendation' => 'Data sensor di luar rentang normal. Periksa kalibrasi sensor.',
@@ -227,6 +228,7 @@ class FuzzyMamdaniService
         return [
             'water_quality_status' => $dominantRule['category'],
             'water_quality_score' => $finalScore,
+            'category' => $dominantRule['category'], // Add for Firestore compatibility
             'salinity_ppt' => $salinityPpt,
             'aerator_status' => $dominantRule['aerator'],
             'recommendation' => $recommendation,
