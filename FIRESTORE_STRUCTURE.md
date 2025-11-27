@@ -6,7 +6,7 @@ TambaQ menggunakan **hybrid database architecture**:
 - **Firestore**: Real-time sensor data, fuzzy logic results, historical data
 
 ## Collections & Documents
-
+    
 ### 1. `sensorRead` Collection
 **Purpose**: Real-time sensor data from ESP32
 

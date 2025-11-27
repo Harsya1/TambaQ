@@ -28,12 +28,34 @@ class DashboardController extends Controller
         // Jika ada data sensor, evaluasi dengan fuzzy logic
         if ($sensorData) {
             $fuzzyDecision = $this->processFuzzyLogic($sensorData);
+        } else {
+            // Jika tidak ada data sensor, buat fuzzy decision kosong dengan sensorReading
+            $fuzzyDecision = [
+                'water_quality_status' => 'Unknown',
+                'recommendation' => 'No sensor data available',
+                'fuzzy_details' => '',
+                'water_quality_score' => 0,
+                'sensorReading' => (object) [
+                    'ph_value' => 0,
+                    'tds_value' => 0,
+                    'turbidity' => 0,
+                    'water_level' => 0,
+                    'salinity_ppt' => 0,
+                    'water_quality_score' => 0,
+                ],
+            ];
         }
         
         return view('dashboard', [
             'userName' => Auth::user()->name,
-            'sensorData' => (object) $sensorData, // Convert to object for blade compatibility
-            'fuzzyDecision' => (object) $fuzzyDecision, // Convert to object
+            'sensorData' => (object) ($sensorData ?? [
+                'ph_value' => 0,
+                'tds_value' => 0,
+                'turbidity' => 0,
+                'water_level' => 0,
+                'salinity_ppt' => 0,
+            ]),
+            'fuzzyDecision' => (object) $fuzzyDecision,
         ]);
     }
 
@@ -55,6 +77,7 @@ class DashboardController extends Controller
         // Return fuzzy decision data
         return [
             'water_quality_status' => $fuzzyResult['water_quality_status'],
+            'category' => $fuzzyResult['category'], // Add category for blade
             'recommendation' => $fuzzyResult['recommendation'],
             'fuzzy_details' => $fuzzyResult['fuzzy_details'],
             'water_quality_score' => $fuzzyResult['water_quality_score'],
