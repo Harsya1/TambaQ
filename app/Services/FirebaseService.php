@@ -33,14 +33,14 @@ class FirebaseService
     public function getLatestSensorData()
     {
         try {
-            // Build REST API URL
-            $url = "{$this->baseUrl}/sensorRead/dataSensor";
+            // Build REST API URL with API key for authentication
+            $url = "{$this->baseUrl}/sensorRead/dataSensor?key={$this->apiKey}";
             
             // Make GET request
             $response = Http::get($url);
             
             if (!$response->successful()) {
-                Log::warning('Sensor data document not found or request failed: ' . $response->status());
+                Log::warning('Sensor data document not found or request failed: ' . $response->status() . ' - ' . $response->body());
                 return null;
             }
             
@@ -221,6 +221,14 @@ class FirebaseService
     public function getHistoricalData($startDate, $endDate, $orderBy = 'timestamp', $limit = 1000)
     {
         try {
+            // Convert string dates to Carbon if needed
+            if (is_string($startDate)) {
+                $startDate = \Carbon\Carbon::parse($startDate);
+            }
+            if (is_string($endDate)) {
+                $endDate = \Carbon\Carbon::parse($endDate);
+            }
+            
             // Build structured query
             $query = [
                 'structuredQuery' => [
@@ -249,7 +257,7 @@ class FirebaseService
                     'orderBy' => [
                         [
                             'field' => ['fieldPath' => $orderBy],
-                            'direction' => 'ASCENDING'
+                            'direction' => 'DESCENDING'
                         ]
                     ],
                     'limit' => $limit
@@ -373,6 +381,157 @@ class FirebaseService
         } catch (\Exception $e) {
             Log::error('Error getting chart data: ' . $e->getMessage());
             return null;
+        }
+    }
+    
+    /**
+     * Count alerts (Poor/Critical) in last 24 hours from sensorHistory
+     */
+    public function countAlertsLast24Hours()
+    {
+        try {
+            $startDate = now()->subHours(24);
+            $endDate = now();
+            
+            $query = [
+                'structuredQuery' => [
+                    'from' => [['collectionId' => 'sensorHistory']],
+                    'where' => [
+                        'compositeFilter' => [
+                            'op' => 'AND',
+                            'filters' => [
+                                [
+                                    'fieldFilter' => [
+                                        'field' => ['fieldPath' => 'timestamp'],
+                                        'op' => 'GREATER_THAN_OR_EQUAL',
+                                        'value' => ['timestampValue' => $startDate->toIso8601String()]
+                                    ]
+                                ],
+                                [
+                                    'fieldFilter' => [
+                                        'field' => ['fieldPath' => 'timestamp'],
+                                        'op' => 'LESS_THAN_OR_EQUAL',
+                                        'value' => ['timestampValue' => $endDate->toIso8601String()]
+                                    ]
+                                ],
+                                [
+                                    'fieldFilter' => [
+                                        'field' => ['fieldPath' => 'FuzzyValue'],
+                                        'op' => 'LESS_THAN',
+                                        'value' => ['doubleValue' => 45] // Poor/Critical threshold
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
+                    'limit' => 1000
+                ]
+            ];
+            
+            $url = "https://firestore.googleapis.com/v1/projects/{$this->projectId}/databases/(default)/documents:runQuery";
+            $response = Http::post($url, $query);
+            
+            if (!$response->successful()) {
+                return 0;
+            }
+            
+            $results = $response->json();
+            $count = 0;
+            
+            foreach ($results as $result) {
+                if (isset($result['document'])) {
+                    $count++;
+                }
+            }
+            
+            return $count;
+            
+        } catch (\Exception $e) {
+            Log::error('Error counting alerts: ' . $e->getMessage());
+            return 0;
+        }
+    }
+    
+    /**
+     * Calculate average response time (interval between data uploads)
+     */
+    public function getAverageResponseTime()
+    {
+        try {
+            // Get last 10 entries to calculate average interval
+            $startDate = now()->subHours(1);
+            $endDate = now();
+            
+            $query = [
+                'structuredQuery' => [
+                    'from' => [['collectionId' => 'sensorHistory']],
+                    'where' => [
+                        'compositeFilter' => [
+                            'op' => 'AND',
+                            'filters' => [
+                                [
+                                    'fieldFilter' => [
+                                        'field' => ['fieldPath' => 'timestamp'],
+                                        'op' => 'GREATER_THAN_OR_EQUAL',
+                                        'value' => ['timestampValue' => $startDate->toIso8601String()]
+                                    ]
+                                ],
+                                [
+                                    'fieldFilter' => [
+                                        'field' => ['fieldPath' => 'timestamp'],
+                                        'op' => 'LESS_THAN_OR_EQUAL',
+                                        'value' => ['timestampValue' => $endDate->toIso8601String()]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
+                    'orderBy' => [
+                        ['field' => ['fieldPath' => 'timestamp'], 'direction' => 'DESCENDING']
+                    ],
+                    'limit' => 10
+                ]
+            ];
+            
+            $url = "https://firestore.googleapis.com/v1/projects/{$this->projectId}/databases/(default)/documents:runQuery";
+            $response = Http::post($url, $query);
+            
+            if (!$response->successful()) {
+                return '10.0s'; // Default ESP32 interval
+            }
+            
+            $results = $response->json();
+            $timestamps = [];
+            
+            foreach ($results as $result) {
+                if (isset($result['document']['fields']['timestamp'])) {
+                    $timestampField = $result['document']['fields']['timestamp'];
+                    // Extract timestamp value directly
+                    if (isset($timestampField['timestampValue'])) {
+                        $timestamps[] = $timestampField['timestampValue'];
+                    }
+                }
+            }
+            
+            if (count($timestamps) < 2) {
+                return '10.0s'; // Default
+            }
+            
+            // Calculate average interval
+            $intervals = [];
+            for ($i = 0; $i < count($timestamps) - 1; $i++) {
+                $time1 = strtotime($timestamps[$i]);
+                $time2 = strtotime($timestamps[$i + 1]);
+                $intervals[] = abs($time1 - $time2);
+            }
+            
+            $avgInterval = array_sum($intervals) / count($intervals);
+            
+            return number_format($avgInterval, 1) . 's';
+            
+        } catch (\Exception $e) {
+            Log::error('Error calculating response time: ' . $e->getMessage());
+            return '10.0s';
         }
     }
 }

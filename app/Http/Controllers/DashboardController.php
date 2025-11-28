@@ -23,16 +23,14 @@ class DashboardController extends Controller
         // Ambil data sensor terbaru dari Firestore
         $sensorData = $this->firebaseService->getLatestSensorData();
         
-        $fuzzyDecision = null;
-        
         // Jika ada data sensor, evaluasi dengan fuzzy logic
         if ($sensorData) {
             $fuzzyDecision = $this->processFuzzyLogic($sensorData);
         } else {
-            // Jika tidak ada data sensor, buat fuzzy decision kosong dengan sensorReading
+            // Default values when no sensor data
             $fuzzyDecision = [
-                'water_quality_status' => 'Unknown',
-                'recommendation' => 'No sensor data available',
+                'water_quality_status' => 'Tidak ada data',
+                'recommendation' => 'Menunggu data sensor dari ESP32...',
                 'fuzzy_details' => '',
                 'water_quality_score' => 0,
                 'sensorReading' => (object) [
@@ -41,20 +39,21 @@ class DashboardController extends Controller
                     'turbidity' => 0,
                     'water_level' => 0,
                     'salinity_ppt' => 0,
-                    'water_quality_score' => 0,
-                ],
+                    'water_quality_score' => 0
+                ]
+            ];
+            $sensorData = [
+                'ph_value' => 0,
+                'tds_value' => 0,
+                'turbidity' => 0,
+                'water_level' => 0,
+                'salinity_ppt' => 0
             ];
         }
         
         return view('dashboard', [
             'userName' => Auth::user()->name,
-            'sensorData' => (object) ($sensorData ?? [
-                'ph_value' => 0,
-                'tds_value' => 0,
-                'turbidity' => 0,
-                'water_level' => 0,
-                'salinity_ppt' => 0,
-            ]),
+            'sensorData' => (object) $sensorData,
             'fuzzyDecision' => (object) $fuzzyDecision,
         ]);
     }
@@ -77,7 +76,6 @@ class DashboardController extends Controller
         // Return fuzzy decision data
         return [
             'water_quality_status' => $fuzzyResult['water_quality_status'],
-            'category' => $fuzzyResult['category'], // Add category for blade
             'recommendation' => $fuzzyResult['recommendation'],
             'fuzzy_details' => $fuzzyResult['fuzzy_details'],
             'water_quality_score' => $fuzzyResult['water_quality_score'],
@@ -135,22 +133,50 @@ class DashboardController extends Controller
         $devicesWithWarning = 0;
         
         if ($sensorData) {
+            // pH out of range (6.5-8.5)
             if ($sensorData['ph_value'] < 6.5 || $sensorData['ph_value'] > 8.5) $devicesWithWarning++;
+            
+            // Turbidity too high (>50 NTU)
             if ($sensorData['turbidity'] > 50) $devicesWithWarning++;
-            if ($sensorData['tds_value'] > 10000) $devicesWithWarning++;
+            
+            // TDS too high (>1000 ppm)
+            if ($sensorData['tds_value'] > 1000) $devicesWithWarning++;
+            
+            // Salinity abnormal (should be 0-35 ppt)
+            if ($sensorData['salinity_ppt'] > 35) $devicesWithWarning++;
+            
+            // Water level too low (<50 cm) or too high (>300 cm)
+            if ($sensorData['water_level'] < 50 || $sensorData['water_level'] > 300) $devicesWithWarning++;
         }
         
-        // Total alerts dalam 24 jam (simulated for now)
-        $totalAlerts = rand(0, 5);
+        // Total alerts dalam 24 jam (count Poor/Critical scores from history)
+        $alerts24h = $this->firebaseService->countAlertsLast24Hours();
         
-        // Average response time (simulasi - dalam detik)
-        $avgResponseTime = '1.2s';
+        // Average response time (interval antara data uploads)
+        $avgResponseTime = $this->firebaseService->getAverageResponseTime();
         
         return response()->json([
             'totalDevices' => $totalDevices,
             'devicesWithWarning' => $devicesWithWarning,
-            'totalAlerts' => $totalAlerts,
+            'totalAlerts' => $alerts24h,
             'avgResponseTime' => $avgResponseTime,
+        ]);
+    }
+    
+    /**
+     * API endpoint untuk mendapatkan data history table dengan pagination
+     */
+    public function getHistoryData(Request $request)
+    {
+        $startDate = $request->query('startDate', now()->subDays(7));
+        $endDate = $request->query('endDate', now());
+        $limit = $request->query('limit', 100);
+        
+        $historyData = $this->firebaseService->getHistoricalData($startDate, $endDate, $limit);
+        
+        return response()->json([
+            'data' => $historyData,
+            'total' => count($historyData),
         ]);
     }
 

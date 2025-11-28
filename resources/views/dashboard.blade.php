@@ -776,67 +776,31 @@
                     @if($fuzzyDecision && isset($fuzzyDecision->sensorReading))
                         @php
                             $score = $fuzzyDecision->sensorReading->water_quality_score ?? 0;
-                            
-                            // Use category from fuzzy result if available
-                            $categoryFromFuzzy = $fuzzyDecision->category ?? null;
-                            
-                            // Fallback: calculate from score
                             $category = 'Critical';
                             $icon = '❌';
                             $badgeClass = 'category-critical';
                             $color = '#ff0844';
                             
-                            if ($categoryFromFuzzy) {
-                                $category = $categoryFromFuzzy;
-                                // Set icon and badge based on category name
-                                if ($category === 'Excellent') {
-                                    $icon = '⭐';
-                                    $badgeClass = 'category-excellent';
-                                    $color = '#43e97b';
-                                } elseif ($category === 'Good') {
-                                    $icon = '✅';
-                                    $badgeClass = 'category-good';
-                                    $color = '#4facfe';
-                                } elseif ($category === 'Fair') {
-                                    $icon = '⚠️';
-                                    $badgeClass = 'category-fair';
-                                    $color = '#f093fb';
-                                } elseif ($category === 'Poor') {
-                                    $icon = '⚠️';
-                                    $badgeClass = 'category-poor';
-                                    $color = '#fa709a';
-                                } elseif ($category === 'Critical') {
-                                    $icon = '❌';
-                                    $badgeClass = 'category-critical';
-                                    $color = '#ff0844';
-                                } elseif ($category === 'Unknown') {
-                                    $icon = '❓';
-                                    $badgeClass = 'category-fair';
-                                    $color = '#999';
-                                }
-                            } else {
-                                // Fallback to score-based categorization
-                                if ($score >= 85) {
-                                    $category = 'Excellent';
-                                    $icon = '⭐';
-                                    $badgeClass = 'category-excellent';
-                                    $color = '#43e97b';
-                                } elseif ($score >= 65) {
-                                    $category = 'Good';
-                                    $icon = '✅';
-                                    $badgeClass = 'category-good';
-                                    $color = '#4facfe';
-                                } elseif ($score >= 45) {
-                                    $category = 'Fair';
-                                    $icon = '⚠️';
-                                    $badgeClass = 'category-fair';
-                                    $color = '#f093fb';
-                                } elseif ($score >= 25) {
-                                    $category = 'Poor';
-                                    $icon = '⚠️';
-                                    $badgeClass = 'category-poor';
-                                    $color = '#fa709a';
-                                }
+                            if ($score >= 85) {
+                                $category = 'Excellent';
+                                $icon = '⭐';
+                                $badgeClass = 'category-excellent';
+                                $color = '#43e97b';
+                            } elseif ($score >= 65) {
+                                $category = 'Good';
+                                $icon = '✅';
+                                $badgeClass = 'category-good';
+                                $color = '#4facfe';
+                            } elseif ($score >= 45) {
+                                $category = 'Fair';
+                                $icon = '⚠️';
+                                $badgeClass = 'category-fair';
+                                $color = '#f093fb';
+                            } elseif ($score >= 25) {
+                                $category = 'Poor';
+                                $icon = '⚠️';
+                                $badgeClass = 'category-poor';
+                                $color = '#fa709a';
                             }
                         @endphp
                         <div class="category-display">
@@ -853,7 +817,7 @@
                 <!-- Fuzzy Logic Decision -->
                 <div class="control-box">
                     <div class="control-title">Sistem Fuzzy Mamdani</div>
-                    @if($fuzzyDecision && $fuzzyDecision->water_quality_status !== 'Unknown')
+                    @if($fuzzyDecision)
                         <div class="fuzzy-content">
                             <div class="fuzzy-status">
                                 Status: {{ $fuzzyDecision->water_quality_status }}
@@ -862,14 +826,14 @@
                                 <strong>Rekomendasi:</strong><br>
                                 {{ $fuzzyDecision->recommendation }}
                             </div>
-                            @if(isset($fuzzyDecision->fuzzy_details) && $fuzzyDecision->fuzzy_details)
+                            @if($fuzzyDecision->fuzzy_details)
                                 <div class="fuzzy-details">
                                     {{ $fuzzyDecision->fuzzy_details }}
                                 </div>
                             @endif
                         </div>
                     @else
-                        <div class="no-data">Menunggu data sensor dari ESP32...</div>
+                        <div class="no-data">Belum ada keputusan fuzzy</div>
                     @endif
                 </div>
             </section>
