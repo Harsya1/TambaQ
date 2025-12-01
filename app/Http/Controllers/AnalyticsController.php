@@ -37,6 +37,7 @@ class AnalyticsController extends Controller
             ->groupBy(function($item) {
                 return Carbon::parse($item['timestamp'])->format('Y-m-d');
             })
+            ->sortKeys()  // Sort by date ascending (oldest to newest)
             ->map(function($group) {
                 return [
                     'score' => round(collect($group)->avg('water_quality_score'), 2),
@@ -79,6 +80,7 @@ class AnalyticsController extends Controller
             ->groupBy(function($item) {
                 return Carbon::parse($item['timestamp'])->format('Y-m-d');
             })
+            ->sortKeys()  // Sort by date ascending (oldest to newest)
             ->map(function($group) {
                 return [
                     'score' => round(collect($group)->avg('water_quality_score'), 2),
