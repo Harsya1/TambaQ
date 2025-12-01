@@ -46,31 +46,33 @@ class FuzzyMamdaniService
 
     /**
      * Membership Function untuk Turbidity/NTU (3 trapezoids)
-     * Low: [0, 0, 20, 35] - Terlalu jernih
-     * Medium: [25, 35, 45, 60] - Optimal (ada plankton)
-     * High: [50, 70, 150, 150] - Keruh berbahaya
+     * Disesuaikan dengan research: Batas aman < 30 NTU, Bahaya > 60 NTU
+     * Low: [0, 0, 15, 25] - Terlalu jernih (kurang plankton)
+     * Medium: [20, 25, 35, 45] - Optimal (plankton seimbang)
+     * High: [40, 60, 150, 150] - Keruh berbahaya (risiko 4x kematian)
      */
     private function turbidityMembership($value)
     {
         return [
-            'low' => $this->trapezoid($value, 0, 0, 20, 35),
-            'medium' => $this->trapezoid($value, 25, 35, 45, 60),
-            'high' => $this->trapezoid($value, 50, 70, 150, 150),
+            'low' => $this->trapezoid($value, 0, 0, 15, 25),
+            'medium' => $this->trapezoid($value, 20, 25, 35, 45),
+            'high' => $this->trapezoid($value, 40, 60, 150, 150),
         ];
     }
 
     /**
      * Membership Function untuk TDS/PPM (3 trapezoids)
-     * Low: [0, 0, 500, 1500] - Terlalu tawar
-     * Medium: [1000, 2000, 5000, 8000] - Payau optimal
-     * High: [6000, 10000, 50000, 50000] - Terlalu asin
+     * Disesuaikan untuk BUDIDAYA AIR TAWAR (Low Salinity Farming)
+     * Low: [0, 0, 200, 350] - Terlalu tawar (defisiensi mineral)
+     * Medium: [300, 400, 600, 800] - Optimal air tawar (0.5-1.4 ppt)
+     * High: [700, 1000, 3000, 3000] - Terlalu tinggi untuk air tawar
      */
     private function tdsMembership($value)
     {
         return [
-            'low' => $this->trapezoid($value, 0, 0, 500, 1500),
-            'medium' => $this->trapezoid($value, 1000, 2000, 5000, 8000),
-            'high' => $this->trapezoid($value, 6000, 10000, 50000, 50000),
+            'low' => $this->trapezoid($value, 0, 0, 200, 350),
+            'medium' => $this->trapezoid($value, 300, 400, 600, 800),
+            'high' => $this->trapezoid($value, 700, 1000, 3000, 3000),
         ];
     }
 
@@ -93,43 +95,43 @@ class FuzzyMamdaniService
 
     /**
      * 27 Fuzzy Rules untuk Tambak Udang Vaname
-     * Format: [pH, Turbidity, TDS] → [Score, Aerator, Category]
+     * Format: [pH, Turbidity, TDS] → [Score, Category]
      */
     private function getFuzzyRules()
     {
         return [
-            // Rule 1-9: pH Low
-            ['ph' => 'low', 'turbidity' => 'low', 'tds' => 'low', 'score' => 35, 'aerator' => 'on', 'category' => 'Poor', 'reason' => 'pH rendah, air terlalu tawar & jernih'],
-            ['ph' => 'low', 'turbidity' => 'low', 'tds' => 'medium', 'score' => 40, 'aerator' => 'on', 'category' => 'Poor', 'reason' => 'pH rendah mengganggu meski TDS ok'],
-            ['ph' => 'low', 'turbidity' => 'low', 'tds' => 'high', 'score' => 25, 'aerator' => 'on', 'category' => 'Critical', 'reason' => 'pH rendah + salinitas tinggi berbahaya'],
-            ['ph' => 'low', 'turbidity' => 'medium', 'tds' => 'low', 'score' => 38, 'aerator' => 'on', 'category' => 'Poor', 'reason' => 'pH rendah, meski turbidity ok'],
-            ['ph' => 'low', 'turbidity' => 'medium', 'tds' => 'medium', 'score' => 45, 'aerator' => 'on', 'category' => 'Fair', 'reason' => 'pH rendah, parameter lain ok'],
-            ['ph' => 'low', 'turbidity' => 'medium', 'tds' => 'high', 'score' => 35, 'aerator' => 'on', 'category' => 'Poor', 'reason' => 'pH rendah + TDS tinggi'],
-            ['ph' => 'low', 'turbidity' => 'high', 'tds' => 'low', 'score' => 20, 'aerator' => 'on', 'category' => 'Critical', 'reason' => 'pH rendah + air keruh'],
-            ['ph' => 'low', 'turbidity' => 'high', 'tds' => 'medium', 'score' => 30, 'aerator' => 'on', 'category' => 'Poor', 'reason' => 'pH rendah + air keruh'],
-            ['ph' => 'low', 'turbidity' => 'high', 'tds' => 'high', 'score' => 15, 'aerator' => 'on', 'category' => 'Critical', 'reason' => 'Semua parameter buruk - BAHAYA!'],
+            // Rule 1-9: pH Low (Asam berbahaya untuk udang)
+            ['ph' => 'low', 'turbidity' => 'low', 'tds' => 'low', 'score' => 35, 'category' => 'Poor', 'reason' => 'pH rendah, air terlalu tawar & jernih'],
+            ['ph' => 'low', 'turbidity' => 'low', 'tds' => 'medium', 'score' => 40, 'category' => 'Poor', 'reason' => 'pH rendah mengganggu meski TDS optimal'],
+            ['ph' => 'low', 'turbidity' => 'low', 'tds' => 'high', 'score' => 25, 'category' => 'Critical', 'reason' => 'pH rendah + salinitas tinggi berbahaya'],
+            ['ph' => 'low', 'turbidity' => 'medium', 'tds' => 'low', 'score' => 38, 'category' => 'Poor', 'reason' => 'pH rendah, meski turbidity optimal'],
+            ['ph' => 'low', 'turbidity' => 'medium', 'tds' => 'medium', 'score' => 45, 'category' => 'Fair', 'reason' => 'pH rendah, parameter lain optimal'],
+            ['ph' => 'low', 'turbidity' => 'medium', 'tds' => 'high', 'score' => 35, 'category' => 'Poor', 'reason' => 'pH rendah + TDS tinggi'],
+            ['ph' => 'low', 'turbidity' => 'high', 'tds' => 'low', 'score' => 20, 'category' => 'Critical', 'reason' => 'pH rendah + air keruh'],
+            ['ph' => 'low', 'turbidity' => 'high', 'tds' => 'medium', 'score' => 30, 'category' => 'Poor', 'reason' => 'pH rendah + air keruh'],
+            ['ph' => 'low', 'turbidity' => 'high', 'tds' => 'high', 'score' => 15, 'category' => 'Critical', 'reason' => 'Semua parameter buruk - BAHAYA!'],
             
-            // Rule 10-18: pH Normal
-            ['ph' => 'normal', 'turbidity' => 'low', 'tds' => 'low', 'score' => 55, 'aerator' => 'off', 'category' => 'Fair', 'reason' => 'pH ok, air terlalu tawar & jernih'],
-            ['ph' => 'normal', 'turbidity' => 'low', 'tds' => 'medium', 'score' => 75, 'aerator' => 'off', 'category' => 'Good', 'reason' => 'pH ok, TDS ok, kurang plankton'],
-            ['ph' => 'normal', 'turbidity' => 'low', 'tds' => 'high', 'score' => 60, 'aerator' => 'off', 'category' => 'Fair', 'reason' => 'pH ok, TDS tinggi, air jernih'],
-            ['ph' => 'normal', 'turbidity' => 'medium', 'tds' => 'low', 'score' => 72, 'aerator' => 'off', 'category' => 'Good', 'reason' => 'pH & turbidity ok, TDS rendah'],
-            ['ph' => 'normal', 'turbidity' => 'medium', 'tds' => 'medium', 'score' => 95, 'aerator' => 'off', 'category' => 'Excellent', 'reason' => 'KONDISI OPTIMAL! Semua parameter ideal'],
-            ['ph' => 'normal', 'turbidity' => 'medium', 'tds' => 'high', 'score' => 78, 'aerator' => 'off', 'category' => 'Good', 'reason' => 'pH & turbidity ok, TDS agak tinggi'],
-            ['ph' => 'normal', 'turbidity' => 'high', 'tds' => 'low', 'score' => 50, 'aerator' => 'on', 'category' => 'Fair', 'reason' => 'pH ok, air keruh, TDS rendah'],
-            ['ph' => 'normal', 'turbidity' => 'high', 'tds' => 'medium', 'score' => 58, 'aerator' => 'on', 'category' => 'Fair', 'reason' => 'pH & TDS ok, air terlalu keruh'],
-            ['ph' => 'normal', 'turbidity' => 'high', 'tds' => 'high', 'score' => 42, 'aerator' => 'on', 'category' => 'Poor', 'reason' => 'TDS tinggi + air keruh'],
+            // Rule 10-18: pH Normal (Kondisi ideal untuk udang vaname)
+            ['ph' => 'normal', 'turbidity' => 'low', 'tds' => 'low', 'score' => 55, 'category' => 'Fair', 'reason' => 'pH optimal, air terlalu tawar & jernih'],
+            ['ph' => 'normal', 'turbidity' => 'low', 'tds' => 'medium', 'score' => 75, 'category' => 'Good', 'reason' => 'pH optimal, TDS optimal, kurang plankton'],
+            ['ph' => 'normal', 'turbidity' => 'low', 'tds' => 'high', 'score' => 60, 'category' => 'Fair', 'reason' => 'pH optimal, TDS tinggi, air jernih'],
+            ['ph' => 'normal', 'turbidity' => 'medium', 'tds' => 'low', 'score' => 72, 'category' => 'Good', 'reason' => 'pH & turbidity optimal, TDS rendah'],
+            ['ph' => 'normal', 'turbidity' => 'medium', 'tds' => 'medium', 'score' => 95, 'category' => 'Excellent', 'reason' => 'KONDISI OPTIMAL! Semua parameter ideal untuk pertumbuhan udang'],
+            ['ph' => 'normal', 'turbidity' => 'medium', 'tds' => 'high', 'score' => 78, 'category' => 'Good', 'reason' => 'pH & turbidity optimal, TDS agak tinggi'],
+            ['ph' => 'normal', 'turbidity' => 'high', 'tds' => 'low', 'score' => 50, 'category' => 'Fair', 'reason' => 'pH optimal, air keruh, TDS rendah'],
+            ['ph' => 'normal', 'turbidity' => 'high', 'tds' => 'medium', 'score' => 58, 'category' => 'Fair', 'reason' => 'pH & TDS optimal, air terlalu keruh'],
+            ['ph' => 'normal', 'turbidity' => 'high', 'tds' => 'high', 'score' => 42, 'category' => 'Poor', 'reason' => 'TDS tinggi + air keruh'],
             
-            // Rule 19-27: pH High
-            ['ph' => 'high', 'turbidity' => 'low', 'tds' => 'low', 'score' => 40, 'aerator' => 'on', 'category' => 'Poor', 'reason' => 'pH tinggi, air tawar & jernih'],
-            ['ph' => 'high', 'turbidity' => 'low', 'tds' => 'medium', 'score' => 52, 'aerator' => 'on', 'category' => 'Fair', 'reason' => 'pH tinggi, TDS ok'],
-            ['ph' => 'high', 'turbidity' => 'low', 'tds' => 'high', 'score' => 38, 'aerator' => 'on', 'category' => 'Poor', 'reason' => 'pH tinggi + TDS tinggi'],
-            ['ph' => 'high', 'turbidity' => 'medium', 'tds' => 'low', 'score' => 48, 'aerator' => 'on', 'category' => 'Fair', 'reason' => 'pH tinggi, turbidity ok'],
-            ['ph' => 'high', 'turbidity' => 'medium', 'tds' => 'medium', 'score' => 68, 'aerator' => 'on', 'category' => 'Good', 'reason' => 'pH agak tinggi, parameter lain ok'],
-            ['ph' => 'high', 'turbidity' => 'medium', 'tds' => 'high', 'score' => 55, 'aerator' => 'on', 'category' => 'Fair', 'reason' => 'pH tinggi + TDS tinggi'],
-            ['ph' => 'high', 'turbidity' => 'high', 'tds' => 'low', 'score' => 32, 'aerator' => 'on', 'category' => 'Poor', 'reason' => 'pH tinggi + air keruh'],
-            ['ph' => 'high', 'turbidity' => 'high', 'tds' => 'medium', 'score' => 40, 'aerator' => 'on', 'category' => 'Poor', 'reason' => 'pH tinggi + air keruh'],
-            ['ph' => 'high', 'turbidity' => 'high', 'tds' => 'high', 'score' => 18, 'aerator' => 'on', 'category' => 'Critical', 'reason' => 'Semua parameter buruk - KRITIS!'],
+            // Rule 19-27: pH High (Basa berbahaya untuk udang)
+            ['ph' => 'high', 'turbidity' => 'low', 'tds' => 'low', 'score' => 40, 'category' => 'Poor', 'reason' => 'pH tinggi, air tawar & jernih'],
+            ['ph' => 'high', 'turbidity' => 'low', 'tds' => 'medium', 'score' => 52, 'category' => 'Fair', 'reason' => 'pH tinggi, TDS optimal'],
+            ['ph' => 'high', 'turbidity' => 'low', 'tds' => 'high', 'score' => 38, 'category' => 'Poor', 'reason' => 'pH tinggi + TDS tinggi'],
+            ['ph' => 'high', 'turbidity' => 'medium', 'tds' => 'low', 'score' => 48, 'category' => 'Fair', 'reason' => 'pH tinggi, turbidity optimal'],
+            ['ph' => 'high', 'turbidity' => 'medium', 'tds' => 'medium', 'score' => 68, 'category' => 'Good', 'reason' => 'pH agak tinggi, parameter lain optimal'],
+            ['ph' => 'high', 'turbidity' => 'medium', 'tds' => 'high', 'score' => 55, 'category' => 'Fair', 'reason' => 'pH tinggi + TDS tinggi'],
+            ['ph' => 'high', 'turbidity' => 'high', 'tds' => 'low', 'score' => 32, 'category' => 'Poor', 'reason' => 'pH tinggi + air keruh'],
+            ['ph' => 'high', 'turbidity' => 'high', 'tds' => 'medium', 'score' => 40, 'category' => 'Poor', 'reason' => 'pH tinggi + air keruh'],
+            ['ph' => 'high', 'turbidity' => 'high', 'tds' => 'high', 'score' => 18, 'category' => 'Critical', 'reason' => 'Semua parameter buruk - KRITIS!'],
         ];
     }
 
@@ -162,7 +164,6 @@ class FuzzyMamdaniService
                 $evaluatedRules[] = [
                     'strength' => $strength,
                     'score' => $rule['score'],
-                    'aerator' => $rule['aerator'],
                     'category' => $rule['category'],
                     'reason' => $rule['reason'],
                     'rule' => sprintf('IF pH=%s AND Turbidity=%s AND TDS=%s', 
@@ -172,18 +173,17 @@ class FuzzyMamdaniService
         }
 
         // Jika tidak ada rule yang aktif
+        // Jika tidak ada rule yang aktif
         if (empty($evaluatedRules)) {
             return [
                 'water_quality_status' => 'Unknown',
                 'water_quality_score' => 0,
-                'category' => 'Unknown', // Add for Firestore compatibility
+                'category' => 'Unknown',
                 'salinity_ppt' => $salinityPpt,
-                'aerator_status' => 'on',
                 'recommendation' => 'Data sensor di luar rentang normal. Periksa kalibrasi sensor.',
                 'fuzzy_details' => 'Tidak ada rule yang terpenuhi.',
             ];
         }
-
         // Defuzzifikasi: Weighted Average (Center of Gravity)
         $totalStrength = array_sum(array_column($evaluatedRules, 'strength'));
         $weightedScore = 0;
@@ -216,21 +216,32 @@ class FuzzyMamdaniService
         );
 
         // Generate recommendation berdasarkan dominant rule
+        // Generate recommendation berdasarkan dominant rule
         $recommendation = sprintf(
-            "%s. Score: %.2f/100. %s",
+            "%s. Score: %.2f/100. Kategori: %s",
             $dominantRule['reason'],
             $finalScore,
-            $dominantRule['aerator'] === 'on' 
-                ? 'Aerator AKTIF untuk meningkatkan kualitas air.' 
-                : 'Aerator NONAKTIF. Kondisi stabil, lakukan monitoring rutin.'
+            $dominantRule['category']
         );
+
+        // Tambahkan saran aksi berdasarkan kategori
+        if ($finalScore < 30) {
+            $recommendation .= ' ⚠️ Segera lakukan partial water exchange dan periksa parameter air.';
+        } elseif ($finalScore < 50) {
+            $recommendation .= ' 🔍 Monitoring ketat diperlukan. Persiapkan tindakan korektif.';
+        } elseif ($finalScore < 70) {
+            $recommendation .= ' ✓ Monitoring rutin, kondisi dapat ditingkatkan.';
+        } elseif ($finalScore < 85) {
+            $recommendation .= ' ✓✓ Kondisi baik, pertahankan monitoring rutin.';
+        } else {
+            $recommendation .= ' ✓✓✓ Kondisi excellent, pertahankan!';
+        }
 
         return [
             'water_quality_status' => $dominantRule['category'],
             'water_quality_score' => $finalScore,
-            'category' => $dominantRule['category'], // Add for Firestore compatibility
+            'category' => $dominantRule['category'],
             'salinity_ppt' => $salinityPpt,
-            'aerator_status' => $dominantRule['aerator'],
             'recommendation' => $recommendation,
             'fuzzy_details' => $fuzzyDetails,
             'rule_strength' => $dominantRule['strength'],

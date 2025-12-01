@@ -125,28 +125,40 @@ class DashboardController extends Controller
      */
     public function getHistoryStats()
     {
-        // Total devices (5 sensors)
-        $totalDevices = 5;
+        // Total sensors (4 physical sensors: pH, TDS, Turbidity, Ultrasonic)
+        $totalDevices = 4;
         
-        // Devices with warning (check current sensor values)
+        // Check individual sensor status
         $sensorData = $this->firebaseService->getLatestSensorData();
-        $devicesWithWarning = 0;
+        $sensorsWithWarning = 0;
         
         if ($sensorData) {
-            // pH out of range (6.5-8.5)
-            if ($sensorData['ph_value'] < 6.5 || $sensorData['ph_value'] > 8.5) $devicesWithWarning++;
+            // pH Sensor: Check if offline (value = 0 or unrealistic) or out of range
+            $phValue = $sensorData['ph_value'];
+            if ($phValue == 0 || $phValue < 0 || $phValue > 14 || $phValue < 6.5 || $phValue > 9.0) {
+                $sensorsWithWarning++;
+            }
             
-            // Turbidity too high (>50 NTU)
-            if ($sensorData['turbidity'] > 50) $devicesWithWarning++;
+            // TDS Sensor: Check if offline or out of range
+            $tdsValue = $sensorData['tds_value'];
+            if ($tdsValue == 0 || $tdsValue < 0 || $tdsValue < 500 || $tdsValue > 10000) {
+                $sensorsWithWarning++;
+            }
             
-            // TDS too high (>1000 ppm)
-            if ($sensorData['tds_value'] > 1000) $devicesWithWarning++;
+            // Turbidity Sensor: Check if offline or out of range
+            $turbidityValue = $sensorData['turbidity'];
+            if ($turbidityValue < 0 || $turbidityValue > 150) {
+                $sensorsWithWarning++;
+            }
             
-            // Salinity abnormal (should be 0-35 ppt)
-            if ($sensorData['salinity_ppt'] > 35) $devicesWithWarning++;
-            
-            // Water level too low (<50 cm) or too high (>300 cm)
-            if ($sensorData['water_level'] < 50 || $sensorData['water_level'] > 300) $devicesWithWarning++;
+            // Ultrasonic Sensor: Check if offline (0 or unrealistic distance)
+            $waterLevel = $sensorData['water_level'];
+            if ($waterLevel == 0 || $waterLevel < 5 || $waterLevel > 400) {
+                $sensorsWithWarning++;
+            }
+        } else {
+            // No data available - all sensors offline
+            $sensorsWithWarning = 4;
         }
         
         // Total alerts dalam 24 jam (count Poor/Critical scores from history)
@@ -157,7 +169,7 @@ class DashboardController extends Controller
         
         return response()->json([
             'totalDevices' => $totalDevices,
-            'devicesWithWarning' => $devicesWithWarning,
+            'devicesWithWarning' => $sensorsWithWarning,
             'totalAlerts' => $alerts24h,
             'avgResponseTime' => $avgResponseTime,
         ]);
@@ -200,23 +212,162 @@ class DashboardController extends Controller
     /**
      * API endpoint untuk mendapatkan data response time 24 jam (per jam)
      */
+    /**
+     * API endpoint untuk chart alerts frequency 7 days
+     */
+    public function getAlertsFrequency()
+    {
+        $data = $this->firebaseService->getAlertsFrequency7Days();
+        
+        $labels = [];
+        $counts = [];
+        
+        foreach ($data as $item) {
+            $labels[] = $item['date'];
+            $counts[] = $item['count'];
+        }
+        
+        return response()->json([
+            'labels' => $labels,
+            'counts' => $counts,
+        ]);
+    }
+
+    /**
+     * API endpoint untuk chart response time 24 hours
+     */
     public function getResponseTime24Hours()
     {
-        // Generate 24 jam labels (00:00 sampai 23:00)
+        $data = $this->firebaseService->getResponseTime24Hours();
+        
         $labels = [];
         $responseTimes = [];
         
-        for ($i = 0; $i < 24; $i++) {
-            $hour = str_pad($i, 2, '0', STR_PAD_LEFT) . ':00';
-            $labels[] = $hour;
-            
-            // Generate simulated response time data (50-200 ms)
-            $responseTimes[] = rand(50, 200) + (rand(0, 99) / 100);
+        foreach ($data as $item) {
+            $labels[] = $item['hour'];
+            $responseTimes[] = $item['response_time'];
         }
 
         return response()->json([
             'labels' => $labels,
             'response_times' => $responseTimes,
+        ]);
+    }
+
+    /**
+     * API endpoint untuk detail status setiap sensor
+     */
+    public function getSensorStatus()
+    {
+        $sensorData = $this->firebaseService->getLatestSensorData();
+        
+        $sensors = [];
+        
+        if ($sensorData) {
+            // 1. pH Sensor
+            $phValue = $sensorData['ph_value'];
+            $phStatus = 'online';
+            $phMessage = 'Normal';
+            
+            if ($phValue == 0 || $phValue < 0 || $phValue > 14) {
+                $phStatus = 'offline';
+                $phMessage = 'Sensor tidak terbaca / Error wiring';
+            } elseif ($phValue < 6.5 || $phValue > 9.0) {
+                $phStatus = 'warning';
+                $phMessage = 'Nilai di luar range aman (6.5-9.0)';
+            }
+            
+            $sensors[] = [
+                'name' => 'pH Sensor',
+                'value' => $phValue,
+                'unit' => '',
+                'status' => $phStatus,
+                'message' => $phMessage
+            ];
+            
+            // 2. TDS Sensor
+            $tdsValue = $sensorData['tds_value'];
+            $tdsStatus = 'online';
+            $tdsMessage = 'Normal';
+            
+            if ($tdsValue == 0 || $tdsValue < 0) {
+                $tdsStatus = 'offline';
+                $tdsMessage = 'Sensor tidak terbaca / Error wiring';
+            } elseif ($tdsValue < 500 || $tdsValue > 10000) {
+                $tdsStatus = 'warning';
+                $tdsMessage = 'Nilai ekstrem (normal: 1000-8000 PPM)';
+            }
+            
+            $sensors[] = [
+                'name' => 'TDS Sensor',
+                'value' => $tdsValue,
+                'unit' => 'PPM',
+                'status' => $tdsStatus,
+                'message' => $tdsMessage
+            ];
+            
+            // 3. Turbidity Sensor
+            $turbidityValue = $sensorData['turbidity'];
+            $turbidityStatus = 'online';
+            $turbidityMessage = 'Normal';
+            
+            if ($turbidityValue < 0 || $turbidityValue > 150) {
+                $turbidityStatus = 'warning';
+                $turbidityMessage = 'Nilai tidak realistis (range: 0-150 NTU)';
+            } elseif ($turbidityValue < 25 || $turbidityValue > 60) {
+                $turbidityStatus = 'warning';
+                $turbidityMessage = 'Nilai di luar optimal (25-60 NTU)';
+            }
+            
+            $sensors[] = [
+                'name' => 'Turbidity Sensor',
+                'value' => $turbidityValue,
+                'unit' => 'NTU',
+                'status' => $turbidityStatus,
+                'message' => $turbidityMessage
+            ];
+            
+            // 4. Ultrasonic Sensor
+            $waterLevel = $sensorData['water_level'];
+            $ultrasonicStatus = 'online';
+            $ultrasonicMessage = 'Normal';
+            
+            if ($waterLevel == 0 || $waterLevel < 5 || $waterLevel > 400) {
+                $ultrasonicStatus = 'offline';
+                $ultrasonicMessage = 'Sensor tidak terbaca / Out of range';
+            } elseif ($waterLevel < 80 || $waterLevel > 250) {
+                $ultrasonicStatus = 'warning';
+                $ultrasonicMessage = 'Level air tidak optimal (80-250 cm)';
+            }
+            
+            $sensors[] = [
+                'name' => 'Ultrasonic Sensor',
+                'value' => $waterLevel,
+                'unit' => 'cm',
+                'status' => $ultrasonicStatus,
+                'message' => $ultrasonicMessage
+            ];
+            
+        } else {
+            // No data - all sensors offline
+            $sensorNames = ['pH Sensor', 'TDS Sensor', 'Turbidity Sensor', 'Ultrasonic Sensor'];
+            foreach ($sensorNames as $name) {
+                $sensors[] = [
+                    'name' => $name,
+                    'value' => 0,
+                    'unit' => '',
+                    'status' => 'offline',
+                    'message' => 'Tidak ada data dari ESP32'
+                ];
+            }
+        }
+        
+        return response()->json([
+            'sensors' => $sensors,
+            'total' => 4,
+            'online' => count(array_filter($sensors, fn($s) => $s['status'] === 'online')),
+            'warning' => count(array_filter($sensors, fn($s) => $s['status'] === 'warning')),
+            'offline' => count(array_filter($sensors, fn($s) => $s['status'] === 'offline')),
         ]);
     }
 }

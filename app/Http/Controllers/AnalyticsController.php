@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Services\FirebaseService;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AnalyticsController extends Controller
 {
@@ -225,47 +226,57 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Export data as PDF
+     * Export data as PDF (Hybrid: Real-time + Historical)
      */
     public function exportPdf(Request $request)
     {
         $start = Carbon::parse($request->query('start', Carbon::now()->subDays(7)));
         $end = Carbon::parse($request->query('end', Carbon::now()));
 
+        // ========== PAGE 1: REAL-TIME DATA ==========
+        // Get current sensor and fuzzy data (latest from historical data)
+        $latestData = $this->firebaseService->getHistoricalData(Carbon::now()->subMinutes(5), Carbon::now(), 'timestamp', 1);
+        $realtimeData = !empty($latestData) ? $latestData[0] : [];
+        
+        // ========== PAGE 2+: HISTORICAL DATA ==========
         // Get historical data from Firestore
         $historyData = $this->firebaseService->getHistoricalData($start, $end);
-        $data = collect($historyData);
+        $historicalCollection = collect($historyData);
 
-        // Calculate summary statistics
+        // Calculate summary statistics from historical data
         $summary = [
-            'avg_score' => round($data->avg('water_quality_score'), 2),
-            'avg_ph' => round($data->avg('ph_value'), 2),
-            'avg_tds' => round($data->avg('tds_value'), 2),
-            'avg_turbidity' => round($data->avg('turbidity'), 2),
-            'avg_salinity' => round($data->avg('salinity_ppt'), 2),
-            'min_ph' => round($data->min('ph_value'), 2),
-            'max_ph' => round($data->max('ph_value'), 2),
-            'min_tds' => round($data->min('tds_value'), 2),
-            'max_tds' => round($data->max('tds_value'), 2),
-            'min_turbidity' => round($data->min('turbidity'), 2),
-            'max_turbidity' => round($data->max('turbidity'), 2),
+            'avg_score' => round($historicalCollection->avg('water_quality_score') ?? 0, 2),
+            'avg_ph' => round($historicalCollection->avg('ph_value') ?? 0, 2),
+            'avg_tds' => round($historicalCollection->avg('tds_value') ?? 0, 2),
+            'avg_turbidity' => round($historicalCollection->avg('turbidity') ?? 0, 2),
+            'avg_salinity' => round($historicalCollection->avg('salinity_ppt') ?? 0, 2),
+            'min_ph' => round($historicalCollection->min('ph_value') ?? 0, 2),
+            'max_ph' => round($historicalCollection->max('ph_value') ?? 0, 2),
+            'min_tds' => round($historicalCollection->min('tds_value') ?? 0, 2),
+            'max_tds' => round($historicalCollection->max('tds_value') ?? 0, 2),
+            'min_turbidity' => round($historicalCollection->min('turbidity') ?? 0, 2),
+            'max_turbidity' => round($historicalCollection->max('turbidity') ?? 0, 2),
+            'total_records' => $historicalCollection->count(),
         ];
 
-        // Generate HTML content
-        $html = view('reports.water-quality-pdf', [
-            'data' => $data,
+        // Generate PDF using DomPDF
+        $pdf = Pdf::loadView('reports.water-quality-pdf', [
+            'realtimeData' => $realtimeData,
+            'historicalData' => $historicalCollection,
             'summary' => $summary,
             'start' => $start,
-            'end' => $end
-        ])->render();
+            'end' => $end,
+            'generatedAt' => Carbon::now(),
+        ]);
+
+        // Set paper size and orientation
+        $pdf->setPaper('A4', 'landscape');
 
         // Set filename
-        $filename = 'water_quality_report_' . Carbon::now()->format('YmdHis') . '.html';
+        $filename = 'water_quality_report_' . Carbon::now()->format('YmdHis') . '.pdf';
         
-        // Return as downloadable HTML file (can be opened and printed as PDF)
-        return response($html)
-            ->header('Content-Type', 'text/html')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+        // Download PDF
+        return $pdf->download($filename);
     }
 
     /**

@@ -27,8 +27,10 @@ Route::middleware('auth')->group(function () {
     // API Routes untuk real-time data
     Route::get('/api/sensor/latest', [DashboardController::class, 'getLatestSensorData'])->name('api.sensor.latest');
     Route::get('/api/sensor/chart', [DashboardController::class, 'getChartData'])->name('api.sensor.chart');
+    Route::get('/api/sensor/status', [DashboardController::class, 'getSensorStatus'])->name('api.sensor.status');
     Route::get('/api/history-stats', [DashboardController::class, 'getHistoryStats'])->name('api.history.stats');
     Route::get('/api/history/data', [DashboardController::class, 'getHistoryData'])->name('api.history.data');
+    Route::get('/api/alerts-frequency/7days', [DashboardController::class, 'getAlertsFrequency'])->name('api.alerts.frequency');
     Route::get('/api/response-time/24hours', [DashboardController::class, 'getResponseTime24Hours'])->name('api.response.time.24hours');
     
     // Analytics API Routes

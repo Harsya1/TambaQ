@@ -63,7 +63,7 @@ class FirebaseService
             // Check if salinity already exists in Firestore, if not calculate and update
             $salinityPpt = $this->extractValue($fields, 'salinitasValue');
             
-            if ($salinityPpt === null || $salinityPpt === 0) {
+            if ($salinityPpt === null || $salinityPpt === 0 || $salinityPpt == 0) {
                 // Convert TDS to Salinity
                 $salinityPpt = $this->convertTDStoSalinity($tdsValue);
                 
@@ -116,12 +116,17 @@ class FirebaseService
 
     /**
      * Convert TDS (PPM) to Salinity (PPT)
-     * Using simplified PSS-78 formula with K=0.57
+     * Using simplified conversion formula: Salinity (PPT) = TDS (PPM) × K / 1000
+     * Where K = 0.57 (conversion factor for seawater)
      */
     private function convertTDStoSalinity($tdsValue, $temperature = 25)
     {
-        $K = 0.57;
-        $salinity_ppt = $tdsValue / ($K * 1000);
+        if ($tdsValue === null || $tdsValue === 0) {
+            return 0;
+        }
+        
+        $K = 0.57; // Conversion factor
+        $salinity_ppt = ($tdsValue * $K) / 1000;
         return round($salinity_ppt, 2);
     }
 
@@ -308,7 +313,8 @@ class FirebaseService
     public function updateSensorDataWithSalinity($salinityPpt)
     {
         try {
-            $url = "{$this->baseUrl}/sensorRead/dataSensor";
+            // Build URL with API key for authentication
+            $url = "{$this->baseUrl}/sensorRead/dataSensor?key={$this->apiKey}";
             
             // Prepare Firestore format for salinity field
             $document = [
@@ -318,13 +324,13 @@ class FirebaseService
             ];
             
             // PATCH request to update only salinitasValue field
-            $response = Http::patch("{$url}?updateMask.fieldPaths=salinitasValue", $document);
+            $response = Http::patch("{$url}&updateMask.fieldPaths=salinitasValue", $document);
             
             if ($response->successful()) {
                 Log::info('Salinity value updated in dataSensor: ' . $salinityPpt . ' PPT');
                 return true;
             } else {
-                Log::error('Failed to update salinity value: ' . $response->status());
+                Log::error('Failed to update salinity value: ' . $response->status() . ' - ' . $response->body());
                 return false;
             }
             
@@ -532,6 +538,166 @@ class FirebaseService
         } catch (\Exception $e) {
             Log::error('Error calculating response time: ' . $e->getMessage());
             return '10.0s';
+        }
+    }
+
+    /**
+     * Get alerts frequency for last 7 days (untuk chart)
+     * Returns: array of alerts count per day
+     */
+    public function getAlertsFrequency7Days()
+    {
+        try {
+            $data = [];
+            
+            // Loop 7 hari terakhir
+            for ($i = 6; $i >= 0; $i--) {
+                $startDate = now()->subDays($i)->startOfDay();
+                $endDate = now()->subDays($i)->endOfDay();
+                
+                $query = [
+                    'structuredQuery' => [
+                        'from' => [['collectionId' => 'sensorHistory']],
+                        'where' => [
+                            'compositeFilter' => [
+                                'op' => 'AND',
+                                'filters' => [
+                                    [
+                                        'fieldFilter' => [
+                                            'field' => ['fieldPath' => 'timestamp'],
+                                            'op' => 'GREATER_THAN_OR_EQUAL',
+                                            'value' => ['timestampValue' => $startDate->toIso8601String()]
+                                        ]
+                                    ],
+                                    [
+                                        'fieldFilter' => [
+                                            'field' => ['fieldPath' => 'timestamp'],
+                                            'op' => 'LESS_THAN_OR_EQUAL',
+                                            'value' => ['timestampValue' => $endDate->toIso8601String()]
+                                        ]
+                                    ],
+                                    [
+                                        'fieldFilter' => [
+                                            'field' => ['fieldPath' => 'FuzzyValue'],
+                                            'op' => 'LESS_THAN',
+                                            'value' => ['doubleValue' => 45] // Critical + Poor (score < 45)
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ];
+                
+                $url = "https://firestore.googleapis.com/v1/projects/{$this->projectId}/databases/(default)/documents:runQuery";
+                $response = Http::post($url, $query);
+                
+                $count = 0;
+                if ($response->successful()) {
+                    $results = $response->json();
+                    foreach ($results as $result) {
+                        if (isset($result['document'])) {
+                            $count++;
+                        }
+                    }
+                }
+                
+                $data[] = [
+                    'date' => $startDate->format('D'), // Mon, Tue, Wed, etc
+                    'count' => $count
+                ];
+            }
+            
+            return $data;
+            
+        } catch (\Exception $e) {
+            Log::error('Error getting alerts frequency: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Get average response time per hour for last 24 hours (untuk chart)
+     * Returns: array of avg response time per hour
+     */
+    public function getResponseTime24Hours()
+    {
+        try {
+            $data = [];
+            
+            // Loop 24 jam terakhir
+            for ($i = 23; $i >= 0; $i--) {
+                $startHour = now()->subHours($i)->startOfHour();
+                $endHour = now()->subHours($i)->endOfHour();
+                
+                $query = [
+                    'structuredQuery' => [
+                        'from' => [['collectionId' => 'sensorHistory']],
+                        'where' => [
+                            'compositeFilter' => [
+                                'op' => 'AND',
+                                'filters' => [
+                                    [
+                                        'fieldFilter' => [
+                                            'field' => ['fieldPath' => 'timestamp'],
+                                            'op' => 'GREATER_THAN_OR_EQUAL',
+                                            'value' => ['timestampValue' => $startHour->toIso8601String()]
+                                        ]
+                                    ],
+                                    [
+                                        'fieldFilter' => [
+                                            'field' => ['fieldPath' => 'timestamp'],
+                                            'op' => 'LESS_THAN_OR_EQUAL',
+                                            'value' => ['timestampValue' => $endHour->toIso8601String()]
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ],
+                        'orderBy' => [
+                            ['field' => ['fieldPath' => 'timestamp'], 'direction' => 'ASCENDING']
+                        ]
+                    ]
+                ];
+                
+                $url = "https://firestore.googleapis.com/v1/projects/{$this->projectId}/databases/(default)/documents:runQuery";
+                $response = Http::post($url, $query);
+                
+                $avgResponseTime = 10000; // Default 10 detik = 10000 ms
+                
+                if ($response->successful()) {
+                    $results = $response->json();
+                    $timestamps = [];
+                    
+                    foreach ($results as $result) {
+                        if (isset($result['document']['fields']['timestamp']['timestampValue'])) {
+                            $timestamps[] = $result['document']['fields']['timestamp']['timestampValue'];
+                        }
+                    }
+                    
+                    // Hitung rata-rata interval jika ada minimal 2 data
+                    if (count($timestamps) >= 2) {
+                        $intervals = [];
+                        for ($j = 0; $j < count($timestamps) - 1; $j++) {
+                            $time1 = strtotime($timestamps[$j]);
+                            $time2 = strtotime($timestamps[$j + 1]);
+                            $intervals[] = abs($time2 - $time1) * 1000; // Convert ke milliseconds
+                        }
+                        $avgResponseTime = array_sum($intervals) / count($intervals);
+                    }
+                }
+                
+                $data[] = [
+                    'hour' => $startHour->format('H:00'),
+                    'response_time' => round($avgResponseTime, 0) // dalam milliseconds
+                ];
+            }
+            
+            return $data;
+            
+        } catch (\Exception $e) {
+            Log::error('Error getting response time 24h: ' . $e->getMessage());
+            return [];
         }
     }
 }
