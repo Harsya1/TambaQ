@@ -359,6 +359,11 @@
             color: white;
         }
 
+        .device-status.warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
         .device-status.offline {
             background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
             color: white;
@@ -369,6 +374,19 @@
             height: 8px;
             border-radius: 50%;
             background-color: currentColor;
+        }
+
+        /* Loading animation */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Sensor value display */
+        .device-value {
+            font-size: 12px;
+            color: #888;
+            margin-top: 2px;
         }
 
         /* Alerts Frequency Chart */
@@ -474,69 +492,12 @@
                         <i class="bi bi-router"></i>
                         Status Devices
                     </div>
-                    <div class="device-list">
-                        <div class="device-item">
-                            <div class="device-info">
-                                <div class="device-icon">
-                                    <i class="bi bi-droplet"></i>
-                                </div>
-                                <div class="device-name">pH Sensor</div>
-                            </div>
-                            <div class="device-status online">
-                                <span class="status-dot"></span>
-                                Online
-                            </div>
-                        </div>
-
-                        <div class="device-item">
-                            <div class="device-info">
-                                <div class="device-icon">
-                                    <i class="bi bi-water"></i>
-                                </div>
-                                <div class="device-name">TDS Sensor</div>
-                            </div>
-                            <div class="device-status online">
-                                <span class="status-dot"></span>
-                                Online
-                            </div>
-                        </div>
-
-                        <div class="device-item">
-                            <div class="device-info">
-                                <div class="device-icon">
-                                    <i class="bi bi-eye"></i>
-                                </div>
-                                <div class="device-name">Turbidity Sensor</div>
-                            </div>
-                            <div class="device-status offline">
-                                <span class="status-dot"></span>
-                                Offline
-                            </div>
-                        </div>
-
-                        <div class="device-item">
-                            <div class="device-info">
-                                <div class="device-icon">
-                                    <i class="bi bi-tsunami"></i>
-                                </div>
-                                <div class="device-name">Water Level Sensor</div>
-                            </div>
-                            <div class="device-status online">
-                                <span class="status-dot"></span>
-                                Online
-                            </div>
-                        </div>
-
-                        <div class="device-item">
-                            <div class="device-info">
-                                <div class="device-icon">
-                                    <i class="bi bi-moisture"></i>
-                                </div>
-                                <div class="device-name">Salinity Sensor</div>
-                            </div>
-                            <div class="device-status online">
-                                <span class="status-dot"></span>
-                                Online
+                    <div class="device-list" id="deviceList">
+                        <!-- Loading state -->
+                        <div class="device-item" style="justify-content: center;">
+                            <div style="color: #666;">
+                                <i class="bi bi-arrow-clockwise" style="animation: spin 1s linear infinite;"></i>
+                                Loading sensor status...
                             </div>
                         </div>
                     </div>
@@ -569,15 +530,70 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Alerts Frequency Chart
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sensor icon mapping
+            const sensorIcons = {
+                'pH Sensor': 'bi-droplet',
+                'TDS Sensor': 'bi-water',
+                'Turbidity Sensor': 'bi-eye',
+                'Ultrasonic Sensor': 'bi-tsunami'
+            };
+
+            // Load Sensor Status
+            function loadSensorStatus() {
+            fetch('/api/sensor/status')
+                .then(response => response.json())
+                .then(data => {
+                    const deviceList = document.getElementById('deviceList');
+                    deviceList.innerHTML = '';
+                    
+                    data.sensors.forEach(sensor => {
+                        const deviceItem = document.createElement('div');
+                        deviceItem.className = 'device-item';
+                        
+                        const iconClass = sensorIcons[sensor.name] || 'bi-gear';
+                        const statusText = sensor.status.charAt(0).toUpperCase() + sensor.status.slice(1);
+                        
+                        deviceItem.innerHTML = `
+                            <div class="device-info">
+                                <div class="device-icon">
+                                    <i class="bi ${iconClass}"></i>
+                                </div>
+                                <div>
+                                    <div class="device-name">${sensor.name}</div>
+                                    <div class="device-value">${sensor.value} ${sensor.unit}</div>
+                                </div>
+                            </div>
+                            <div class="device-status ${sensor.status}">
+                                <span class="status-dot"></span>
+                                ${statusText}
+                            </div>
+                        `;
+                        
+                        deviceList.appendChild(deviceItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading sensor status:', error);
+                    document.getElementById('deviceList').innerHTML = `
+                        <div class="device-item" style="justify-content: center; color: #f5576c;">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            Error loading sensor data
+                        </div>
+                    `;
+                });
+        }
+
+        // Alerts Frequency Chart (7 Days)
         const ctx = document.getElementById('alertsChart').getContext('2d');
-        const alertsChart = new Chart(ctx, {
+        let alertsChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                labels: [],
                 datasets: [{
                     label: 'Alerts',
-                    data: [12, 19, 15, 25, 22, 18, 24],
+                    data: [],
                     borderColor: '#667eea',
                     backgroundColor: 'rgba(102, 126, 234, 0.1)',
                     borderWidth: 2,
@@ -596,6 +612,13 @@
                 plugins: {
                     legend: {
                         display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Alerts: ' + context.parsed.y;
+                            }
+                        }
                     }
                 },
                 scales: {
@@ -605,6 +628,12 @@
                             color: '#e0e7ff'
                         },
                         ticks: {
+                            color: '#666',
+                            stepSize: 1
+                        },
+                        title: {
+                            display: true,
+                            text: 'Number of Alerts',
                             color: '#666'
                         }
                     },
@@ -620,7 +649,18 @@
             }
         });
 
-        // Response Time Chart (24 Hours)
+            // Load Alerts Frequency Data
+            function loadAlertsFrequency() {
+                fetch('/api/alerts-frequency/7days')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Alerts Frequency Data:', data);
+                        alertsChart.data.labels = data.labels;
+                        alertsChart.data.datasets[0].data = data.counts;
+                        alertsChart.update();
+                    })
+                    .catch(error => console.error('Error loading alerts frequency:', error));
+            }        // Response Time Chart (24 Hours)
         const responseTimeCtx = document.getElementById('responseTimeChart').getContext('2d');
         let responseTimeChart = new Chart(responseTimeCtx, {
             type: 'bar',
@@ -687,40 +727,44 @@
             }
         });
 
-        // Load Response Time Data
-        function loadResponseTimeData() {
-            fetch('/api/response-time/24hours')
-                .then(response => response.json())
-                .then(data => {
-                    responseTimeChart.data.labels = data.labels;
-                    responseTimeChart.data.datasets[0].data = data.response_times;
-                    responseTimeChart.update();
-                })
-                .catch(error => console.error('Error loading response time data:', error));
-        }
-
-        // Update stats dynamically (example)
+            // Load Response Time Data
+            function loadResponseTimeData() {
+                fetch('/api/response-time/24hours')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Response Time Data:', data);
+                        responseTimeChart.data.labels = data.labels;
+                        responseTimeChart.data.datasets[0].data = data.response_times;
+                        responseTimeChart.update();
+                    })
+                    .catch(error => console.error('Error loading response time data:', error));
+            }        // Update stats dynamically
         function updateStats() {
             fetch('/api/history-stats')
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('totalDevices').textContent = data.totalDevices || 5;
-                    document.getElementById('devicesWithWarning').textContent = data.devicesWithWarning || 2;
-                    document.getElementById('totalAlerts').textContent = data.totalAlerts || 24;
-                    document.getElementById('avgResponseTime').textContent = data.avgResponseTime || '1.2s';
+                    document.getElementById('totalDevices').textContent = data.totalDevices || 4;
+                    document.getElementById('devicesWithWarning').textContent = data.devicesWithWarning || 0;
+                    document.getElementById('totalAlerts').textContent = data.totalAlerts || 0;
+                    document.getElementById('avgResponseTime').textContent = data.avgResponseTime || '10.0s';
                 })
                 .catch(error => console.error('Error fetching stats:', error));
         }
 
         // Initial load
         updateStats();
+        loadSensorStatus();
+        loadAlertsFrequency();
         loadResponseTimeData();
 
-        // Auto refresh every 5 minutes
-        setInterval(() => {
-            loadResponseTimeData();
-            updateStats();
-        }, 300000);
+            // Auto refresh every 5 minutes
+            setInterval(() => {
+                updateStats();
+                loadSensorStatus();
+                loadAlertsFrequency();
+                loadResponseTimeData();
+            }, 300000);
+        }); // End DOMContentLoaded
     </script>
 </body>
 </html>

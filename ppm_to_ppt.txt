@@ -1,0 +1,223 @@
+
+Analisis dan Model Konversi Nilai Total Dissolved Solids (TDS) dalam PPM Menjadi Salinitas Praktis (PPT) Berbasis Standar Oseanografi
+
+
+I. Pendahuluan, Definisi Formal, dan Konteks Instrumental
+
+Konversi dari nilai Total Dissolved Solids (TDS) yang diukur oleh sensor komersial menjadi nilai Salinitas Praktis ($S_P$) yang diterima secara ilmiah (biasanya dinyatakan dalam Parts Per Thousand atau PSU) adalah proses yang multi-tahap dan melibatkan pemahaman mendalam mengenai prinsip kerja sensor serta standar termodinamika air laut. Laporan ini menyajikan analisis terperinci, data, dan rumus yang diperlukan untuk melakukan konversi yang akurat, beranjak dari pendekatan empiris yang digunakan sensor hingga standar formal Practical Salinity Scale of 1978 (PSS-78).
+
+A. Membedakan Total Dissolved Solids (TDS), Konduktivitas Listrik (EC), dan Salinitas
+
+
+1. Prinsip Operasi Sensor TDS
+
+Penting untuk diakui bahwa sensor yang dipasarkan sebagai "TDS meter" tidak secara langsung mengukur massa padatan terlarut (metode yang memerlukan gravimetri di laboratorium), melainkan berfungsi sebagai alat ukur Konduktivitas Listrik (EC).1 Konduktivitas listrik (DHL) adalah kemampuan suatu larutan untuk menghantarkan arus listrik, sebuah sifat yang dipengaruhi oleh konsentrasi, jenis, dan mobilitas ion terlarut (elektrolit) dalam cairan.1
+Sensor TDS yang umum, seperti model DFRobot Gravity, menggunakan dua elektroda untuk mengukur konduktivitas. Kandungan partikel ion dan sifat elektrolit dalam cairan secara langsung memengaruhi hasil pengukuran ini.1 Terdapat dua jenis sensor konduktivitas: sensor kontak (umum untuk larutan konduktivitas rendah) dan sensor induktif (umum untuk larutan konduktivitas tinggi).3 Nilai $TDS_{PPM}$ yang ditampilkan oleh sensor komersial adalah hasil yang dihitung secara internal oleh perangkat lunak sensor berdasarkan pembacaan EC mentah, melalui penerapan faktor konversi empiris $K$ yang telah diatur di pabrik.4
+
+2. Definisi Formal Salinitas
+
+Salinitas didefinisikan sebagai tingkat keasinan, atau kandungan garam total, dalam air.5 Meskipun TDS dan Salinitas sering digunakan bergantian, Salinitas Praktis ($S_P$) adalah parameter ilmiah yang memiliki definisi termodinamika yang sangat spesifik. Skala Salinitas Praktis 1978 (PSS-78) mendefinisikan $S_P$ sebagai parameter turunan yang dihitung dari rasio konduktivitas air laut yang diukur terhadap larutan kalium klorida (KCl) standar.6
+Untuk perhitungan $S_P$ yang sah, sistem pengukuran harus menyediakan output Konduktivitas, Suhu, dan Tekanan (kedalaman).8 Hal ini menunjukkan bahwa Salinitas adalah parameter yang diturunkan secara murni (a pure derived parameter) yang memperhitungkan properti termodinamika air.
+
+B. Unit Konversi Skala Dasar (PPM vs. PPT)
+
+Konversi antara Parts Per Million (PPM) dan Parts Per Thousand (PPT) didasarkan pada hubungan skala metrik. PPM umumnya setara dengan mg/L (miligram per liter) atau mg/kg, sementara PPT setara dengan g/L (gram per liter) atau g/kg.
+Hubungan konversi matematisnya adalah sebagai berikut:
+$$1 \text{ PPT} = 1000 \text{ PPM}$$atau$$1 \text{ PPM} = 0.001 \text{ PPT}$$
+Formula konversi langsung adalah:
+$$\text{PPM ke PPT}: \text{PPT} = \text{PPM} / 10^3$$
+$$\text{PPT ke PPM}: \text{PPM} = \text{PPT} \times 10^3$$
+Misalnya, 2000 PPM setara dengan 2 PPT.9 Perangkat pengujian sering beralih secara otomatis dari PPM ke PPT ketika pengukuran melebihi 1000 PPM, sekadar untuk menampilkan angka yang lebih ringkas dan mudah dikelola.9
+Namun, perlu ditekankan bahwa "PPT Salinitas" memiliki dua makna: (1) Konversi unit matematis sederhana dari konsentrasi massa, dan (2) Nilai ilmiah yang dihitung berdasarkan standar PSS-78. Konversi yang akurat untuk penelitian harus mengikuti langkah-langkah PSS-78 yang jauh lebih ketat, bukan sekadar pembagian dengan 1000.
+
+II. Rantai Konversi Data Bertahap (TDS $\rightarrow$ EC)
+
+Konversi dari $TDS_{PPM}$ menuju Salinitas Praktis membutuhkan dua langkah antara yang penting: (1) Menentukan Konduktivitas Listrik ($EC$) dari $TDS_{PPM}$, dan (2) Melakukan koreksi suhu untuk menormalisasi nilai EC ke standar $25^\circ C$.
+
+A. Derivasi EC dari TDS Menggunakan Faktor Konversi Empiris ($K$)
+
+Karena sensor TDS secara inheren mengukur EC, nilai $TDS_{PPM}$ yang disajikan merupakan hasil penerapan faktor konversi $K$ (atau $k_e$). Hubungan fundamental antara keduanya adalah:
+$$TDS(\text{ppm}) = K \times EC(\mu S/cm)$$
+10
+Untuk melanjutkan ke perhitungan Salinitas Praktis (yang memerlukan input EC), nilai $TDS_{PPM}$ harus diubah kembali menjadi $EC_{raw}$:
+$$EC_{raw}(\mu S/cm) = \frac{TDS(\text{ppm})}{K}$$
+
+Variabilitas dan Signifikansi Faktor $K$
+
+Faktor $K$ bukanlah konstanta universal; ia sangat bergantung pada komposisi ionik spesifik larutan.11 Rentang tipikal untuk $K$ berada antara 0.5 dan 0.8, dan sering kali diambil sebagai 0.64 atau 0.7 untuk aplikasi air tawar umum.10
+Perbedaan komposisi ionik memiliki dampak signifikan terhadap nilai $K$:
+Air Laut (Saline): Air laut didominasi oleh natrium klorida (NaCl). Ion monovalen seperti $\text{Na}^{+}$ dan $\text{Cl}^{-}$ memiliki mobilitas yang tinggi dan menghantarkan listrik dengan sangat efisien. Oleh karena itu, rasio $TDS/EC$ cenderung rendah, dengan nilai $K$ yang khas mendekati $0.5$ hingga $0.55$.4
+Air Tawar/Tanah: Air tawar atau air tanah sering mengandung ion bivalen seperti kalsium ($\text{Ca}^{2+}$) dan magnesium ($\text{Mg}^{2+}$) serta bikarbonat. Ion-ion ini menghantarkan listrik kurang efisien, sehingga menghasilkan TDS yang lebih tinggi untuk nilai EC yang sama. Akibatnya, faktor $K$ cenderung lebih tinggi, sekitar $0.65$ hingga $0.75$.4
+Jika sebuah sensor TDS dikalibrasi di pabrik menggunakan $K=0.7$ (standar air tawar) dan digunakan untuk mengukur air laut (seharusnya $K \approx 0.5$), nilai $TDS_{PPM}$ yang dilaporkan sensor akan secara sistematis lebih rendah dari nilai TDS aktual, atau, yang lebih parah, nilai $EC_{raw}$ yang dihitung kembali dari sensor tersebut akan salah. Nilai EC yang salah ini kemudian akan menjadi input untuk PSS-78, menghasilkan kesalahan akumulatif yang signifikan dalam perhitungan Salinitas Praktis.
+Oleh karena itu, jika instrumen tidak memungkinkan penyesuaian faktor $K$, pengguna harus menentukan faktor $K$ yang paling sesuai untuk jenis air sampel (misalnya, menggunakan $K \approx 0.55$ untuk air payau atau air laut) sebelum menghitung $EC_{raw}$ untuk memastikan akurasi yang lebih tinggi.12
+
+B. Langkah 2: Koreksi Suhu Otomatis (Automatic Temperature Compensation/ATC)
+
+Konduktivitas elektrolit sangat bergantung pada suhu.14 Pengaruh suhu pada konduktivitas dapat menyebabkan peningkatan pembacaan sekitar 2% per kenaikan $1^{\circ}C$.2 Data empiris mendukung hal ini, menunjukkan bahwa peningkatan temperatur air dari $30^{\circ}C$ menjadi $100^{\circ}C$ menyebabkan peningkatan substansial pada nilai Konduktivitas Listrik (DHL/EC).14
+Untuk membandingkan pembacaan atau menggunakannya sebagai input standar PSS-78, Konduktivitas Listrik harus dinormalisasi ke Suhu Nominal, yaitu $25^{\circ}C$.10
+
+Formula Kompensasi Suhu Linier (LIN)
+
+Kompensasi suhu mengubah $EC$ yang terukur ($EC_{measured}$) pada suhu tertentu ($T_{measured}$) menjadi nilai standar $EC_{25}$.
+Formula Kompensasi Suhu Linier yang umum digunakan adalah:
+
+$$EC_{25} = EC_{measured} \times$$
+16
+Di mana:
+$EC_{25}$ adalah Konduktivitas Listrik yang dikoreksi pada $25^{\circ}C$.
+$EC_{measured}$ adalah Konduktivitas Listrik mentah yang dihitung pada $T_{measured}$.
+$T_{measured}$ adalah suhu larutan saat pengukuran (dalam ${^\circ}C$).
+$\alpha$ (alpha) adalah Koefisien Suhu (Temperature Coefficient).
+Untuk sebagian besar larutan berair, nilai koefisien suhu $\alpha$ umumnya diambil sekitar $0.020 \text{ }^\circ C^{-1}$ (atau $2.0\%/K$).2 Koreksi ini diperlukan untuk mencapai presisi. Meskipun model linier ini memadai untuk larutan dengan konsentrasi rendah hingga menengah, aplikasi yang sangat menuntut akurasi dapat memerlukan fungsi non-linier (NLF) atau grafik kompensasi yang spesifik untuk larutan tertentu.2
+
+Implikasi Peran Ganda Suhu
+
+Penting untuk dipahami bahwa, meskipun koreksi ke $EC_{25}$ sudah dilakukan, suhu yang diukur ($T_{measured}$) tetap merupakan input wajib bagi algoritma PSS-78 yang sebenarnya. PSS-78 adalah model termodinamika yang memerlukan suhu aktual untuk menghitung rasio konduktivitas yang terkoreksi ($R_t$). Koreksi $EC_{25}$ hanya menstandarkan nilai EC, sementara suhu yang diukur digunakan di dalam persamaan PSS-78 untuk menyesuaikan pengaruh termal pada mobilitas ion pada suhu pengukuran sebenarnya.
+
+III. Konversi Menuju Salinitas Praktis (PPT/PSU)
+
+Setelah mendapatkan Konduktivitas Listrik Terkoreksi Suhu ($EC_{25}$), konversi akhir menjadi Salinitas dapat dilakukan melalui metode estimasi sederhana atau melalui standar oseanografi formal.
+
+A. Metode Estimasi Sederhana dan Konversi Unit
+
+Untuk aplikasi yang tidak memerlukan presisi oseanografi, Salinitas sering diperkirakan menggunakan konversi unit dari TDS atau perkiraan empiris dari EC.
+
+1. Konversi Unit Massa Sederhana
+
+Jika diasumsikan bahwa $TDS_{PPM}$ yang diukur (setelah dikoreksi $K$ dan $T$) cukup mendekati konsentrasi total garam, konversi ke PPT dapat dilakukan melalui pembagian $1000$:
+$$\text{Salinitas}_{PPT} \approx \frac{TDS_{PPM}}{1000}$$
+Ini sekadar mengubah satuan dari mg/L menjadi g/L. Namun, metode ini mengabaikan sifat kimia dan fisika spesifik yang mendefinisikan Salinitas Praktis (PSS-78), yang didasarkan pada rasio konduktivitas terhadap standar KCl.2
+
+2. Aturan Empiris EC ke Salinitas
+
+Terdapat aturan praktis di mana salinitas (PPT) diperkirakan dengan menerapkan faktor konversi tertentu pada pembacaan konduktivitas (terkoreksi suhu). Contohnya, mengalikan $EC (\mu S/cm)$ dengan $\approx 0.55$ dan membaginya dengan 1000 dapat memberikan perkiraan Salinitas yang cepat.13 Meskipun ini menyediakan perkiraan yang lebih baik daripada sekadar konversi TDS, ini masih merupakan pendekatan empiris.
+
+B. Metode Standar Oseanografi: Skala Salinitas Praktis 1978 (PSS-78)
+
+Skala Salinitas Praktis (PSS-78) adalah standar yang digunakan secara luas di oseanografi dan mewakili metode paling akurat untuk mendefinisikan Salinitas ($S_P$, dalam Practical Salinity Unit atau PSU, yang secara numerik setara dengan PPT atau g/kg).
+
+1. Konsep PSS-78
+
+PSS-78 menghubungkan Salinitas Praktis dengan rasio konduktivitas $(R)$ pada kondisi tertentu. Untuk menghitung $S_P$, sensor harus memberikan output Konduktivitas, Suhu, dan Tekanan.8 Tekanan (P) sangat penting karena konduktivitas elektrolit dipengaruhi oleh kedalaman hidrostatik, terutama di perairan laut dalam.
+
+2. Batasan Peralatan Sensor TDS
+
+Sensor TDS/EC komersial standar tidak dirancang untuk menghasilkan Salinitas PSS-78 yang valid karena dua alasan utama:
+Mereka sering tidak mengukur Tekanan ($P$). PSS-78 harus memperhitungkan tekanan karena tekanan digunakan dalam persamaan salinitas.8
+Nilai $TDS_{PPM}$ yang mereka hasilkan bergantung pada faktor $K$ internal yang tetap, yang kemungkinan tidak sesuai untuk air asin.
+PSS-78 hanya valid dalam rentang Salinitas Praktis $2 < S_P < 42$.18 Jika perhitungan menghasilkan nilai di luar rentang ini (misalnya, $S_P < 2$), algoritma harus beralih ke formula modifikasi (misalnya, Hill et al.) untuk menjaga konsistensi. Untuk air yang sangat asin (brine, yang dapat melebihi 100.000 PPM TDS atau 100 PPT Salinitas) 19, PSS-78 sepenuhnya tidak berlaku.
+
+IV. Formula dan Algoritma PSS-78 (Standardisasi Oseanografi)
+
+Perhitungan Salinitas Praktis melalui PSS-78 adalah proses komputasi yang kompleks, biasanya dilakukan oleh logger data (seperti CTD) atau perangkat lunak oseanografi.
+
+A. Persamaan Polinomial PSS-78
+
+Inti dari PSS-78 adalah persamaan polinomial yang menghubungkan Salinitas Praktis ($S_P$) dengan Rasio Konduktivitas Terkoreksi Suhu dan Tekanan, $R_t$.
+Langkah pertama adalah menghitung rasio konduktivitas $(R)$, yang merupakan rasio konduktivitas yang diukur $(C)$ terhadap konduktivitas air laut standar dengan Salinitas 35, Suhu $15^{\circ}C$, dan Tekanan 0 dbar:
+$$R = \frac{C(S, T, P)}{C(35, 15, 0)}$$
+Rasio $R$ ini kemudian dikoreksi untuk efek suhu dan tekanan melalui fungsi $r(T)$ dan $r(P)$, yang mengarah pada $R_t$. Selanjutnya, $S_P$ dihitung dengan menerapkan polinomial:
+$$S_P = \sum_{j=0}^{5} a_j R_t^{j/2} + \frac{(T-15)}{1 + k(T-15)} \sum_{j=0}^{5} b_j R_t^{j/2}$$
+Di mana:
+$T$ adalah suhu dalam ${^\circ}C$.
+$k$ adalah konstanta yang ditentukan.
+$a_j$ dan $b_j$ adalah satu set koefisien polinomial yang ditentukan secara empiris, yang mencakup koreksi suhu.18
+Koefisien $a_j$ dan $b_j$ adalah nilai tetap yang telah disepakati secara internasional dan harus diperoleh dari referensi oseanografi standar (misalnya, JCS, UNESCO).
+
+B. Pentingnya Koreksi Tekanan
+
+Koreksi tekanan, yang diwakili oleh $r(P)$ dalam perhitungan $R_t$, adalah komponen penting. Konduktivitas air laut meningkat seiring dengan tekanan (kedalaman). Persamaan $r(P)$ sangat kompleks, melibatkan polinomial tekanan ($P$) dan suhu ($T$), yang harus digunakan untuk menormalisasi konduktivitas yang diukur pada kedalaman kembali ke tekanan permukaan. Oleh karena ketidakadaan sensor tekanan, sensor TDS/EC standar hanya valid untuk Salinitas Praktis di permukaan (tekanan atmosfer).
+
+C. Standar Modern: Persamaan Termodinamika Air Laut - 2010 (TEOS-10)
+
+Untuk akurasi tertinggi dalam penelitian oseanografi modern, PSS-78 telah digantikan oleh Thermodynamic Equation of Seawater - 2010 (TEOS-10).20 TEOS-10 memberikan representasi termodinamika yang konsisten untuk semua properti air laut dan mengatasi kelemahan PSS-78, terutama dengan mempertimbangkan anomali komposisi kimia air laut regional.21
+TEOS-10 memperkenalkan konsep Salinitas Absolut ($S_A$), diukur dalam g/kg. $S_A$ adalah Salinitas Praktis yang dikoreksi menggunakan faktor $\delta S_A$, yang memperhitungkan variabilitas komposisi ionik di berbagai wilayah lautan. Meskipun PSS-78 masih umum digunakan karena kesederhanaannya, TEOS-10 adalah standar wajib untuk pemodelan iklim dan penelitian presisi tinggi, dan perhitungan $S_A$ biasanya dilakukan menggunakan Gibbs Seawater (GSW) Oceanographic Toolbox.20
+
+V. Implementasi Praktis dan Rekomendasi Algoritma
+
+Penggunaan $TDS_{PPM}$ dari sensor sebagai input untuk menghitung Salinitas Praktis memerlukan urutan langkah-langkah yang ketat untuk meminimalkan kesalahan yang timbul dari asumsi empiris sensor.
+
+A. Rantai Algoritma Konversi Lengkap
+
+Algoritma yang harus diterapkan oleh pengguna untuk mengonversi $TDS_{PPM}$ menjadi Salinitas Praktis $S_P$ adalah sebagai berikut, dengan asumsi Tekanan ($P$) adalah 0 (pengukuran permukaan):
+Input Data Mentah: Kumpulkan $TDS_{raw}$ (PPM) dan $T_{measured}$ ($^\circ C$).
+Estimasi $EC_{raw}$: Tentukan faktor $K$ yang sesuai untuk komposisi air (misalnya, $K=0.55$ untuk air laut/payau). Hitung Konduktivitas Mentah:
+
+$$EC_{raw}(\mu S/cm) = \frac{TDS_{raw}}{K_{selected}}$$
+Koreksi Suhu (ATC): Gunakan koefisien suhu $(\alpha \approx 0.020 \text{ }^\circ C^{-1})$ untuk menormalkan EC ke $25^{\circ}C$:
+
+$$EC_{25} = EC_{raw} \times$$
+Perhitungan Rasio Standar ($R$): $R$ adalah rasio konduktivitas terkoreksi ($EC_{25}$) terhadap konduktivitas standar air laut.
+Perhitungan $R_t$: Hitung Rasio Konduktivitas Terkoreksi P dan T ($R_t$). (Jika $P \approx 0$ dbar, koreksi tekanan diabaikan, tetapi koreksi suhu $T_{measured}$ ke dalam $R_t$ tetap harus dilakukan).
+Derivasi Salinitas Praktis: Terapkan persamaan Polinomial PSS-78 pada $R_t$ dan $T_{measured}$ untuk mendapatkan $S_P$ (PSU $\approx$ PPT).
+
+B. Keterbatasan dan Sumber Kesalahan
+
+Akurasi hasil sangat bergantung pada dua parameter yang sering diabaikan:
+
+1. Faktor Kimia (K-factor)
+
+Kesalahan pengukuran $TDS_{PPM}$ tidak hanya berasal dari kalibrasi instrumen, tetapi dari asumsi kimia yang salah. Konduktivitas air dipengaruhi oleh komposisi kimia air.11 Jika air memiliki komposisi ionik yang berbeda dari kalibrasi pabrik sensor, nilai EC yang dihitung kembali akan salah. Penggunaan faktor $K$ yang tidak sesuai dengan lingkungan ionik aktual (misalnya, menggunakan $K=0.7$ di lingkungan air laut yang seharusnya $K=0.5$) secara langsung mengacaukan perhitungan $EC_{raw}$, sehingga Salinitas Praktis yang dihasilkan menjadi tidak akurat. Untuk memitigasi hal ini, analisis kimia awal harus dilakukan untuk menentukan $K$ yang paling sesuai untuk lokasi spesifik.12
+
+2. Dinamika Lingkungan
+
+Salinitas di perairan alami, terutama di estuari atau perairan pesisir, bersifat dinamis. Curah hujan yang intens, misalnya, meningkatkan volume air dan secara langsung menurunkan konsentrasi garam, sehingga menurunkan tingkat salinitas.5 Sebaliknya, intrusi air laut (misalnya, di sumur pesisir) meningkatkan Salinitas/TDS.19 Sensor harus memiliki respons yang cepat dan kalibrasi yang stabil untuk menangkap perubahan ini.
+
+C. Ringkasan Formula Kunci dan Rekomendasi
+
+Tabel berikut merangkum langkah-langkah kritis dalam konversi dan menunjukkan sifat kompleks dari konversi PPM TDS menjadi Salinitas Praktis yang sah secara ilmiah.
+Ringkasan Rantai Konversi Multi-Tahap
+
+Langkah Kritis
+Tujuan Teknis
+Formula Kunci (Input)
+Ketergantungan Utama
+1. Reverse EC
+Menghilangkan asumsi pabrik sensor
+$EC_{raw}(\mu S/cm) = TDS_{PPM} / K_{selected}$
+Faktor $K$ (bervariasi 0.5-0.8) 4
+2. ATC
+Menormalkan mobilitas ion ke standar
+$EC_{25} = EC_{raw} \times$
+Koefisien Suhu $\alpha \approx 0.020 \text{ }^\circ C^{-1}$ 16
+3. PSS-78 Derivation
+Menghitung Salinitas Praktis
+$S_P = f(R_t, T, P)$
+Suhu ($T$) dan Tekanan ($P$) 8
+4. Unit Scaling
+Pelaporan Hasil
+$S_P \text{ (PSU)} \approx S_P \text{ (PPT)}$
+Unit numerik yang setara 9
+
+Rasio $TDS/EC$ ($K$) yang harus digunakan sangat bergantung pada tipe air, dengan nilai $K$ yang rendah (misalnya, 0.5) disarankan untuk air laut (dominasi NaCl) dan nilai $K$ yang tinggi (misalnya, 0.7) untuk air tawar/tanah (dominasi bikarbonat/kalsium/magnesium).4
+
+D. Kesimpulan dan Rekomendasi
+
+Konversi nilai $TDS_{PPM}$ dari sensor menjadi Salinitas PPT harus diperlakukan bukan sebagai konversi unit sederhana, melainkan sebagai proses rekonstruksi data yang memerlukan koreksi dan penerapan model termodinamika.
+Jika tujuan adalah mendapatkan indikasi cepat konsentrasi garam (misalnya, untuk akuakultur non-presisi), pembagian sederhana $TDS_{PPM} / 1000$ dapat diterima. Namun, jika diperlukan Salinitas Praktis ($S_P$) yang valid secara ilmiah untuk penelitian oseanografi, langkah-langkah berikut harus dipenuhi:
+Penggunaan EC, Bukan TDS: Selalu gunakan Konduktivitas Listrik ($EC$), yang direkonstruksi dari $TDS_{PPM}$ menggunakan faktor $K$ yang sesuai untuk air sampel.
+Kompensasi Termal Wajib: Normalisasi EC ke $EC_{25}$ harus dilakukan menggunakan koreksi suhu yang akurat.
+Implementasi Algoritma Formal: Perhitungan akhir $S_P$ harus melalui persamaan polinomial PSS-78 atau standar yang lebih modern, TEOS-10.
+Batasan Instrumental: Sensor TDS komersial standar tidak direkomendasikan untuk pengukuran Salinitas Praktis presisi tinggi, karena ketidakmampuan mereka untuk mengukur Tekanan dan ketidakmampuan untuk menyesuaikan faktor $K$ internal. Instrumen yang ideal adalah CTD (Conductivity, Temperature, Depth) yang dirancang khusus untuk oseanografi.
+Works cited
+IoT MONITORING KUALITAS AIR DENGAN MENGGUNAKAN SENSOR SUHU, pH, DAN TOTAL DISSOLVED SOLIDS (TDS) - E-Journal Unesa, accessed November 19, 2025, https://ejournal.unesa.ac.id/index.php/inovasi-fisika-indonesia/article/download/48240/40285
+Conductivity Meter | Soal Jawab Seputar Konduktivitas - adywater.com: HARGA SILICA GEL, accessed November 19, 2025, https://www.adywater.com/2015/05/081322-599149-conductivity-meter-soal.html
+Sensor dan Pengukur Konduktivitas: Alat Penting untuk Pengukuran yang Akurat, accessed November 19, 2025, https://id.supmeaauto.com/training/conductivity-sensor-and-meter-essential-tool-for-accurate-measurements
+How to Calculate Electrical Conductivity From TDS? - Rika Sensor, accessed November 19, 2025, https://www.rikasensor.com/blog-how-to-calculate-electrical-conductivity-from-tds.html
+Salinitas (Tingkat Keasinan): Pengertian, Penyebab, Alat Ukur, dan Cara Menguranginya (Update 2022) - LindungiHutan, accessed November 19, 2025, https://lindungihutan.com/blog/salinitas/
+Practical Salinity Scale – 1978 - Salinometry, accessed November 19, 2025, https://salinometry.com/pss-78/
+Pentingnya Alat Ukur Konduktivitas Air untuk Monitoring Kualitas Air d, accessed November 19, 2025, https://www.alatuji.com/article/detail/1138/pentingnya-alat-ukur-konduktivitas-air-untuk-monitoring-kualitas-air-d
+pss78 - derivation of practical salinity - RBR, accessed November 19, 2025, https://docs.rbr-global.com/gen4-command-reference/B/L35-Customer/pss78-derivation-of-practical-salinity
+Why is my TDS measurement showing PPT instead of PPM? - Apera Instruments, accessed November 19, 2025, https://support.aperainst.com/support/solutions/articles/14000113883-why-is-my-tds-measurement-showing-ppt-instead-of-ppm-
+TDS and EC Conversion - Snowate, accessed November 19, 2025, https://www.snowate.com/knowledge-calculator/calculator/tds-ec-conversion.html
+Correlation between conductivity and total dissolved solid in various type of water: A review, accessed November 19, 2025, https://www.researchgate.net/publication/323352912_Correlation_between_conductivity_and_total_dissolved_solid_in_various_type_of_water_A_review
+Conductivity, Salinity & Total Dissolved Solids - Environmental Measurement Systems, accessed November 19, 2025, https://www.fondriest.com/environmental-measurements/parameters/water-quality/conductivity-salinity-tds/
+How to convert water conductivity in mS/cm to Salinity and TDS? - ResearchGate, accessed November 19, 2025, https://www.researchgate.net/post/How_to_convert_water_conductivity_in_mS_cm_to_Salinity_and_TDS
+PENGARUH TEMPERATUR AIR TERHADAP KONDUKTIVITAS DAN TOTAL DISSOLVED SOLID - eJournal UNIB, accessed November 19, 2025, https://ejournal.unib.ac.id/kumparan_fisika/article/download/26415/12160
+Senseca ECO 521 Series Manual Instruksi EC Meter Kompak Tahan Air - Manuals.plus, accessed November 19, 2025, https://manuals.plus/id/senseca/eco-521-series-waterproof-compact-ec-meter-manual
+What is Automatic Temperature Compensation in Hydroponics? - Growee, accessed November 19, 2025, https://getgrowee.com/what-is-automatic-temperature-compensation/
+Temperature Compensation for Conductivity - aqion, accessed November 19, 2025, https://www.aqion.de/site/112
+gsw_SP_from_R - TEOS-10, accessed November 19, 2025, https://www.teos-10.org/pubs/gsw/html/gsw_SP_from_R.html
+Analisis Intrusi Air Laut dengan Pengukuran Total Dissolved Solids (TDS) Air Sumur Gali di Kecamatan Padang Utara - ResearchGate, accessed November 19, 2025, https://www.researchgate.net/publication/320475782_Analisis_Intrusi_Air_Laut_dengan_Pengukuran_Total_Dissolved_Solids_TDS_Air_Sumur_Gali_di_Kecamatan_Padang_Utara
+TEOS-10 - Wikipedia, accessed November 19, 2025, https://en.wikipedia.org/wiki/TEOS-10
+What every oceanographer needs to know about TEOS-10 (The TEOS-10 Primer) Contents, accessed November 19, 2025, https://www.teos-10.org/pubs/TEOS-10_Primer.pdf

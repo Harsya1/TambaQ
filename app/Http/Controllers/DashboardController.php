@@ -4,71 +4,85 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\SensorReading;
-use App\Models\Actuator;
-use App\Models\FuzzyDecision;
 use App\Services\FuzzyMamdaniService;
+use App\Services\FirebaseService;
 
 class DashboardController extends Controller
 {
     protected $fuzzyService;
+    protected $firebaseService;
 
-    public function __construct(FuzzyMamdaniService $fuzzyService)
+    public function __construct(FuzzyMamdaniService $fuzzyService, FirebaseService $firebaseService)
     {
         $this->fuzzyService = $fuzzyService;
+        $this->firebaseService = $firebaseService;
     }
 
     public function index()
     {
-        // Ambil data sensor terbaru
-        $latestSensor = SensorReading::latest()->first();
+        // Ambil data sensor terbaru dari Firestore
+        $sensorData = $this->firebaseService->getLatestSensorData();
         
         // Jika ada data sensor, evaluasi dengan fuzzy logic
-        if ($latestSensor) {
-            $this->processFuzzyLogic($latestSensor);
+        if ($sensorData) {
+            $fuzzyDecision = $this->processFuzzyLogic($sensorData);
+        } else {
+            // Default values when no sensor data
+            $fuzzyDecision = [
+                'water_quality_status' => 'Tidak ada data',
+                'recommendation' => 'Menunggu data sensor dari ESP32...',
+                'fuzzy_details' => '',
+                'water_quality_score' => 0,
+                'sensorReading' => (object) [
+                    'ph_value' => 0,
+                    'tds_value' => 0,
+                    'turbidity' => 0,
+                    'water_level' => 0,
+                    'salinity_ppt' => 0,
+                    'water_quality_score' => 0
+                ]
+            ];
+            $sensorData = [
+                'ph_value' => 0,
+                'tds_value' => 0,
+                'turbidity' => 0,
+                'water_level' => 0,
+                'salinity_ppt' => 0
+            ];
         }
-        
-        // Ambil keputusan fuzzy terbaru
-        $latestFuzzyDecision = FuzzyDecision::with('sensorReading')
-            ->latest()
-            ->first();
         
         return view('dashboard', [
             'userName' => Auth::user()->name,
-            'sensorData' => $latestSensor,
-            'fuzzyDecision' => $latestFuzzyDecision,
+            'sensorData' => (object) $sensorData,
+            'fuzzyDecision' => (object) $fuzzyDecision,
         ]);
     }
 
     /**
      * Proses fuzzy logic
      */
-    private function processFuzzyLogic($sensorReading)
+    private function processFuzzyLogic($sensorData)
     {
         // Evaluasi kualitas air dengan Fuzzy Mamdani
         $fuzzyResult = $this->fuzzyService->evaluateWaterQuality(
-            $sensorReading->ph_value,
-            $sensorReading->tds_value,
-            $sensorReading->turbidity
+            $sensorData['ph_value'],
+            $sensorData['tds_value'],
+            $sensorData['turbidity']
         );
 
-        // Update salinity_ppt dan water_quality_score di sensor reading
-        $sensorReading->update([
-            'salinity_ppt' => $fuzzyResult['salinity_ppt'],
-            'water_quality_score' => $fuzzyResult['water_quality_score']
-        ]);
+        // Simpan hasil ke Firestore
+        $this->firebaseService->saveFuzzyDecision($sensorData, $fuzzyResult);
 
-        // Update atau create fuzzy decision
-        FuzzyDecision::updateOrCreate(
-            ['sensor_reading_id' => $sensorReading->id],
-            [
-                'water_quality_status' => $fuzzyResult['water_quality_status'],
-                'recommendation' => $fuzzyResult['recommendation'],
-                'fuzzy_details' => $fuzzyResult['fuzzy_details'],
-            ]
-        );
-
-        return $fuzzyResult;
+        // Return fuzzy decision data
+        return [
+            'water_quality_status' => $fuzzyResult['water_quality_status'],
+            'recommendation' => $fuzzyResult['recommendation'],
+            'fuzzy_details' => $fuzzyResult['fuzzy_details'],
+            'water_quality_score' => $fuzzyResult['water_quality_score'],
+            'sensorReading' => (object) array_merge($sensorData, [
+                'water_quality_score' => $fuzzyResult['water_quality_score']
+            ]),
+        ];
     }
 
     /**
@@ -76,19 +90,23 @@ class DashboardController extends Controller
      */
     public function getLatestSensorData()
     {
-        // Simulasi data yang berubah-ubah dengan mengambil data random dari database
-        $allSensors = SensorReading::all();
-        $randomSensor = $allSensors->random();
+        // Ambil data real-time dari Firestore
+        $sensorData = $this->firebaseService->getLatestSensorData();
         
-        // Proses fuzzy logic untuk sensor random
-        $fuzzyResult = $this->processFuzzyLogic($randomSensor);
+        if (!$sensorData) {
+            return response()->json([
+                'error' => 'No sensor data available'
+            ], 404);
+        }
         
-        // Ambil keputusan fuzzy yang baru saja dibuat
-        $latestFuzzyDecision = FuzzyDecision::where('sensor_reading_id', $randomSensor->id)->first();
+        // Proses fuzzy logic
+        $fuzzyDecision = $this->processFuzzyLogic($sensorData);
         
         return response()->json([
-            'sensor' => $randomSensor,
-            'fuzzyDecision' => $latestFuzzyDecision,
+            'sensor' => (object) array_merge($sensorData, [
+                'water_quality_score' => $fuzzyDecision['water_quality_score'] ?? 0
+            ]),
+            'fuzzyDecision' => (object) $fuzzyDecision,
         ]);
     }
 
@@ -107,31 +125,70 @@ class DashboardController extends Controller
      */
     public function getHistoryStats()
     {
-        // Total devices (5 sensors)
-        $totalDevices = 5;
+        // Total sensors (4 physical sensors: pH, TDS, Turbidity, Ultrasonic)
+        $totalDevices = 4;
         
-        // Devices with warning (contoh: cek sensor readings terakhir)
-        $latestSensor = SensorReading::latest()->first();
-        $devicesWithWarning = 0;
+        // Check individual sensor status
+        $sensorData = $this->firebaseService->getLatestSensorData();
+        $sensorsWithWarning = 0;
         
-        if ($latestSensor) {
-            if ($latestSensor->ph_value < 6.5 || $latestSensor->ph_value > 8.5) $devicesWithWarning++;
-            if ($latestSensor->turbidity > 50) $devicesWithWarning++;
+        if ($sensorData) {
+            // pH Sensor: Check if offline (value = 0 or unrealistic) or out of range
+            $phValue = $sensorData['ph_value'];
+            if ($phValue == 0 || $phValue < 0 || $phValue > 14 || $phValue < 6.5 || $phValue > 9.0) {
+                $sensorsWithWarning++;
+            }
+            
+            // TDS Sensor: Check if offline or out of range
+            $tdsValue = $sensorData['tds_value'];
+            if ($tdsValue == 0 || $tdsValue < 0 || $tdsValue < 500 || $tdsValue > 10000) {
+                $sensorsWithWarning++;
+            }
+            
+            // Turbidity Sensor: Check if offline or out of range
+            $turbidityValue = $sensorData['turbidity'];
+            if ($turbidityValue < 0 || $turbidityValue > 150) {
+                $sensorsWithWarning++;
+            }
+            
+            // Ultrasonic Sensor: Check if offline (0 or unrealistic distance)
+            $waterLevel = $sensorData['water_level'];
+            if ($waterLevel == 0 || $waterLevel < 5 || $waterLevel > 400) {
+                $sensorsWithWarning++;
+            }
+        } else {
+            // No data available - all sensors offline
+            $sensorsWithWarning = 4;
         }
         
-        // Total alerts dalam 24 jam
-        $totalAlerts = FuzzyDecision::where('created_at', '>=', now()->subDay())
-            ->where('water_quality_status', 'POOR')
-            ->count();
+        // Total alerts dalam 24 jam (count Poor/Critical scores from history)
+        $alerts24h = $this->firebaseService->countAlertsLast24Hours();
         
-        // Average response time (simulasi - dalam detik)
-        $avgResponseTime = '1.2s';
+        // Average response time (interval antara data uploads)
+        $avgResponseTime = $this->firebaseService->getAverageResponseTime();
         
         return response()->json([
             'totalDevices' => $totalDevices,
-            'devicesWithWarning' => $devicesWithWarning,
-            'totalAlerts' => $totalAlerts,
+            'devicesWithWarning' => $sensorsWithWarning,
+            'totalAlerts' => $alerts24h,
             'avgResponseTime' => $avgResponseTime,
+        ]);
+    }
+    
+    /**
+     * API endpoint untuk mendapatkan data history table dengan pagination
+     */
+    public function getHistoryData(Request $request)
+    {
+        $startDate = $request->query('startDate', now()->subDays(7));
+        $endDate = $request->query('endDate', now());
+        $limit = $request->query('limit', 100);
+        
+        $historyData = $this->firebaseService->getHistoricalData($startDate, $endDate, $limit);
+        
+        return response()->json([
+            'data' => $historyData,
+            'total' => count($historyData),
         ]);
     }
 
@@ -140,61 +197,177 @@ class DashboardController extends Controller
      */
     public function getChartData()
     {
-        // Ambil data sensor dalam 24 jam terakhir
-        $sensorReadings = SensorReading::where('created_at', '>=', now()->subDay())
-            ->orderBy('created_at', 'asc')
-            ->get();
+        // Get chart data from Firebase service
+        $chartData = $this->firebaseService->getChartData(24);
         
-        return response()->json([
-            'labels' => $sensorReadings->map(function($reading) {
-                return $reading->created_at->format('H:i');
-            }),
-            'phData' => $sensorReadings->pluck('ph_value'),
-            'waterLevelData' => $sensorReadings->pluck('water_level'),
-            'tdsData' => $sensorReadings->pluck('tds_value'),
-            'salinityData' => $sensorReadings->pluck('salinity'),
-            'turbidityData' => $sensorReadings->pluck('turbidity'),
-        ]);
+        if (!$chartData) {
+            return response()->json([
+                'error' => 'No chart data available'
+            ], 404);
+        }
+        
+        return response()->json($chartData);
     }
 
     /**
      * API endpoint untuk mendapatkan data response time 24 jam (per jam)
      */
+    /**
+     * API endpoint untuk chart alerts frequency 7 days
+     */
+    public function getAlertsFrequency()
+    {
+        $data = $this->firebaseService->getAlertsFrequency7Days();
+        
+        $labels = [];
+        $counts = [];
+        
+        foreach ($data as $item) {
+            $labels[] = $item['date'];
+            $counts[] = $item['count'];
+        }
+        
+        return response()->json([
+            'labels' => $labels,
+            'counts' => $counts,
+        ]);
+    }
+
+    /**
+     * API endpoint untuk chart response time 24 hours
+     */
     public function getResponseTime24Hours()
     {
-        $twentyFourHoursAgo = now()->subHours(24);
+        $data = $this->firebaseService->getResponseTime24Hours();
         
-        // Query dari water_quality_scores untuk mendapatkan avg response time per jam
-        $data = \App\Models\WaterQualityScore::where('recorded_at', '>=', $twentyFourHoursAgo)
-            ->orderBy('recorded_at')
-            ->get()
-            ->groupBy(function($item) {
-                return \Carbon\Carbon::parse($item->recorded_at)->format('H:00');
-            })
-            ->map(function($group) {
-                return round($group->avg('response_time'), 2);
-            });
-
-        // Generate 24 jam labels (00:00 sampai 23:00)
         $labels = [];
         $responseTimes = [];
         
-        for ($i = 0; $i < 24; $i++) {
-            $hour = str_pad($i, 2, '0', STR_PAD_LEFT) . ':00';
-            $labels[] = $hour;
-            
-            // Jika ada data untuk jam ini, gunakan, jika tidak generate random
-            if (isset($data[$hour])) {
-                $responseTimes[] = $data[$hour];
-            } else {
-                // Generate dummy data (50-200 ms)
-                $responseTimes[] = rand(50, 200) + (rand(0, 99) / 100);
-            }
+        foreach ($data as $item) {
+            $labels[] = $item['hour'];
+            $responseTimes[] = $item['response_time'];
         }
 
         return response()->json([
             'labels' => $labels,
             'response_times' => $responseTimes,
+        ]);
+    }
+
+    /**
+     * API endpoint untuk detail status setiap sensor
+     */
+    public function getSensorStatus()
+    {
+        $sensorData = $this->firebaseService->getLatestSensorData();
+        
+        $sensors = [];
+        
+        if ($sensorData) {
+            // 1. pH Sensor
+            $phValue = $sensorData['ph_value'];
+            $phStatus = 'online';
+            $phMessage = 'Normal';
+            
+            if ($phValue == 0 || $phValue < 0 || $phValue > 14) {
+                $phStatus = 'offline';
+                $phMessage = 'Sensor tidak terbaca / Error wiring';
+            } elseif ($phValue < 6.5 || $phValue > 9.0) {
+                $phStatus = 'warning';
+                $phMessage = 'Nilai di luar range aman (6.5-9.0)';
+            }
+            
+            $sensors[] = [
+                'name' => 'pH Sensor',
+                'value' => $phValue,
+                'unit' => '',
+                'status' => $phStatus,
+                'message' => $phMessage
+            ];
+            
+            // 2. TDS Sensor
+            $tdsValue = $sensorData['tds_value'];
+            $tdsStatus = 'online';
+            $tdsMessage = 'Normal';
+            
+            if ($tdsValue == 0 || $tdsValue < 0) {
+                $tdsStatus = 'offline';
+                $tdsMessage = 'Sensor tidak terbaca / Error wiring';
+            } elseif ($tdsValue < 500 || $tdsValue > 10000) {
+                $tdsStatus = 'warning';
+                $tdsMessage = 'Nilai ekstrem (normal: 1000-8000 PPM)';
+            }
+            
+            $sensors[] = [
+                'name' => 'TDS Sensor',
+                'value' => $tdsValue,
+                'unit' => 'PPM',
+                'status' => $tdsStatus,
+                'message' => $tdsMessage
+            ];
+            
+            // 3. Turbidity Sensor
+            $turbidityValue = $sensorData['turbidity'];
+            $turbidityStatus = 'online';
+            $turbidityMessage = 'Normal';
+            
+            if ($turbidityValue < 0 || $turbidityValue > 150) {
+                $turbidityStatus = 'warning';
+                $turbidityMessage = 'Nilai tidak realistis (range: 0-150 NTU)';
+            } elseif ($turbidityValue < 25 || $turbidityValue > 60) {
+                $turbidityStatus = 'warning';
+                $turbidityMessage = 'Nilai di luar optimal (25-60 NTU)';
+            }
+            
+            $sensors[] = [
+                'name' => 'Turbidity Sensor',
+                'value' => $turbidityValue,
+                'unit' => 'NTU',
+                'status' => $turbidityStatus,
+                'message' => $turbidityMessage
+            ];
+            
+            // 4. Ultrasonic Sensor
+            $waterLevel = $sensorData['water_level'];
+            $ultrasonicStatus = 'online';
+            $ultrasonicMessage = 'Normal';
+            
+            if ($waterLevel == 0 || $waterLevel < 5 || $waterLevel > 400) {
+                $ultrasonicStatus = 'offline';
+                $ultrasonicMessage = 'Sensor tidak terbaca / Out of range';
+            } elseif ($waterLevel < 80 || $waterLevel > 250) {
+                $ultrasonicStatus = 'warning';
+                $ultrasonicMessage = 'Level air tidak optimal (80-250 cm)';
+            }
+            
+            $sensors[] = [
+                'name' => 'Ultrasonic Sensor',
+                'value' => $waterLevel,
+                'unit' => 'cm',
+                'status' => $ultrasonicStatus,
+                'message' => $ultrasonicMessage
+            ];
+            
+        } else {
+            // No data - all sensors offline
+            $sensorNames = ['pH Sensor', 'TDS Sensor', 'Turbidity Sensor', 'Ultrasonic Sensor'];
+            foreach ($sensorNames as $name) {
+                $sensors[] = [
+                    'name' => $name,
+                    'value' => 0,
+                    'unit' => '',
+                    'status' => 'offline',
+                    'message' => 'Tidak ada data dari ESP32'
+                ];
+            }
+        }
+        
+        return response()->json([
+            'sensors' => $sensors,
+            'total' => 4,
+            'online' => count(array_filter($sensors, fn($s) => $s['status'] === 'online')),
+            'warning' => count(array_filter($sensors, fn($s) => $s['status'] === 'warning')),
+            'offline' => count(array_filter($sensors, fn($s) => $s['status'] === 'offline')),
         ]);
     }
 }

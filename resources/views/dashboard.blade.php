@@ -773,7 +773,7 @@
                 <!-- Water Quality Category -->
                 <div class="control-box">
                     <div class="control-title">Kategori Kualitas Air</div>
-                    @if($fuzzyDecision && $fuzzyDecision->sensorReading)
+                    @if($fuzzyDecision && isset($fuzzyDecision->sensorReading))
                         @php
                             $score = $fuzzyDecision->sensorReading->water_quality_score ?? 0;
                             $category = 'Critical';
