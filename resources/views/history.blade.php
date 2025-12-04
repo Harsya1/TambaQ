@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <title>TambaQ - Riwayat</title>
     <style>
@@ -542,7 +543,13 @@
 
             // Load Sensor Status
             function loadSensorStatus() {
-            fetch('/api/sensor/status')
+            fetch('/api/sensor/status', {
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
                 .then(response => response.json())
                 .then(data => {
                     const deviceList = document.getElementById('deviceList');
@@ -651,7 +658,13 @@
 
             // Load Alerts Frequency Data
             function loadAlertsFrequency() {
-                fetch('/api/alerts-frequency/7days')
+                fetch('/api/alerts-frequency/7days', {
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
                     .then(response => response.json())
                     .then(data => {
                         console.log('Alerts Frequency Data:', data);
@@ -729,7 +742,13 @@
 
             // Load Response Time Data
             function loadResponseTimeData() {
-                fetch('/api/response-time/24hours')
+                fetch('/api/response-time/24hours', {
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
                     .then(response => response.json())
                     .then(data => {
                         console.log('Response Time Data:', data);
@@ -740,7 +759,13 @@
                     .catch(error => console.error('Error loading response time data:', error));
             }        // Update stats dynamically
         function updateStats() {
-            fetch('/api/history-stats')
+            fetch('/api/history-stats', {
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('totalDevices').textContent = data.totalDevices || 4;

@@ -35,4 +35,20 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Telegram Bot Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Konfigurasi untuk integrasi Telegram Bot API.
+    | Bot Token didapat dari @BotFather di Telegram.
+    | Chat ID bisa didapat dengan mengirim pesan ke bot lalu cek via API.
+    |
+    */
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'chat_id' => env('TELEGRAM_CHAT_ID'),
+        'webhook_secret' => env('TELEGRAM_WEBHOOK_SECRET'),
+    ],
+
 ];
