@@ -1,388 +1,347 @@
 #include <WiFi.h>
 #include <Firebase_ESP_Client.h>
 #include "addons/TokenHelper.h"
+#include "time.h"
 
 // --------------------------------------------------------------
-// 1. KREDENSIAL WIFI & FIREBASE
+// WIFI & FIREBASE
 // --------------------------------------------------------------
-#define WIFI_SSID "AdiliBahlil"
-#define WIFI_PASSWORD "hisapkandululee"
+#define WIFI_SSID "Ruang 101"
+#define WIFI_PASSWORD "@polije.tif"
 
-// Isi dengan API Key dan Project ID dari langkah sebelumnya
 #define API_KEY "AIzaSyAQbCAw5eKmrNKOVsjUrCTYtJ0rSmAhoM8"
 #define FIREBASE_PROJECT_ID "cihuyyy-7eb5ca94"
 
+#define USER_EMAIL "esp32@example.com"
+#define USER_PASSWORD "password123"
+
 // --------------------------------------------------------------
-// 2. DEFINISI PIN SENSOR
+// PIN SENSOR
 // --------------------------------------------------------------
 #define PH_PIN 35
 #define TDS_PIN 34
-#define TURBIDITY_PIN 33  // Pastikan kabel sensor kekeruhan masuk ke Pin 33
-#define TRIG_PIN 5        // Pin Trigger Ultrasonic
-#define ECHO_PIN 18       // Pin Echo Ultrasonic
+#define TURBIDITY_PIN 33
+#define TRIG_PIN 5
+#define ECHO_PIN 18
 
-// --------------------------------------------------------------
-// 3. KALIBRASI SENSOR (SESUAIKAN DENGAN KALIBRASI FISIK)
-// --------------------------------------------------------------
-// pH Sensor Calibration
-#define PH_OFFSET 0.0         // Offset kalibrasi pH (default: 0)
-#define PH_VOLTAGE_REF 2.5    // Voltage pada pH 7 (standar)
-#define PH_SLOPE 0.18         // Slope sensor pH (mV per unit pH)
-
-// TDS Sensor Calibration
-#define TDS_KVALUE 0.5        // K-value sensor TDS (0.5 untuk TDS sensor standar)
-
-// Turbidity Sensor Calibration
-#define TURB_VOLTAGE_CLEAR 2.7  // Voltage saat air jernih (kalibrasi)
-#define TURB_VOLTAGE_MURKY 1.2  // Voltage saat air keruh (kalibrasi)
-
-// Ultrasonic Distance (untuk konversi ke water level)
-#define TANK_HEIGHT_CM 100    // Tinggi total tangki (cm)
-#define SENSOR_OFFSET_CM 5    // Jarak sensor ke dasar tangki
-
-// Salinity Conversion
-#define SALINITY_K 0.57       // Konstanta konversi TDS → Salinity (sesuai Laravel)
-
-// --------------------------------------------------------------
-// 4. VALIDASI RANGE SENSOR
-// --------------------------------------------------------------
-#define PH_MIN 0.0
-#define PH_MAX 14.0
-#define TDS_MIN 0.0
-#define TDS_MAX 20000.0       // 20000 PPM (20 g/L)
-#define TURBIDITY_MIN 0.0
-#define TURBIDITY_MAX 1000.0  // 1000 NTU
-#define DISTANCE_MIN 2.0      // Minimum distance ultrasonic can measure
-#define DISTANCE_MAX 400.0    // Maximum distance ultrasonic can measure
-
-// Objek Firebase
 FirebaseData fbdo;
 FirebaseAuth auth;
 FirebaseConfig config;
 
-unsigned long sendDataPrevMillis = 0;
-unsigned long wifiCheckPrevMillis = 0;
-int consecutiveFirebaseErrors = 0;
-bool signupOK = false;
+unsigned long previousMillis = 0;
+const long uploadInterval = 10000;
 
+bool firebaseReady = false;
+
+// --------------------------------------------------------------
+// NTP UNTUK SSL - VERSI LEBIH AGRESIF
+// --------------------------------------------------------------
+void initNTP() {
+  Serial.println("\n=== SINKRONISASI WAKTU NTP ===");
+  
+  // Coba beberapa NTP server berbeda
+  const char* ntpServers[][3] = {
+    {"pool.ntp.org", "time.nist.gov", "time.google.com"},
+    {"id.pool.ntp.org", "asia.pool.ntp.org", "0.asia.pool.ntp.org"},
+    {"time.windows.com", "time.cloudflare.com", "ntp.ubuntu.com"}
+  };
+  
+  bool ntpSuccess = false;
+  
+  for (int serverSet = 0; serverSet < 3 && !ntpSuccess; serverSet++) {
+    Serial.printf("\nMencoba NTP Server Set %d:\n", serverSet + 1);
+    Serial.printf("  - %s\n", ntpServers[serverSet][0]);
+    Serial.printf("  - %s\n", ntpServers[serverSet][1]);
+    Serial.printf("  - %s\n", ntpServers[serverSet][2]);
+    
+    // Configure NTP dengan 3 server
+    configTime(7 * 3600, 0, 
+               ntpServers[serverSet][0], 
+               ntpServers[serverSet][1], 
+               ntpServers[serverSet][2]);
+    
+    Serial.print("Menunggu sinkronisasi");
+    
+    // Retry lebih lama (30 detik)
+    for (int i = 0; i < 60; i++) {
+      time_t now = time(nullptr);
+      if (now > 100000) {
+        ntpSuccess = true;
+        Serial.println(" ✓ BERHASIL!");
+        Serial.print("Waktu saat ini: ");
+        Serial.println(ctime(&now));
+        break;
+      }
+      Serial.print(".");
+      delay(500);
+    }
+    
+    if (ntpSuccess) break;
+    
+    Serial.println(" ✗ Gagal, coba server lain...");
+    delay(1000);
+  }
+  
+  if (!ntpSuccess) {
+    Serial.println("\n✗✗✗ NTP GAGAL TOTAL! ✗✗✗");
+    Serial.println("Kemungkinan masalah:");
+    Serial.println("1. Firewall memblokir port 123 (NTP)");
+    Serial.println("2. Koneksi internet tidak stabil");
+    Serial.println("3. Router tidak mengizinkan NTP");
+    Serial.println("\nESP32 akan restart dalam 10 detik...");
+    delay(10000);
+    ESP.restart();
+  }
+  
+  Serial.println("=================================\n");
+}
+
+// --------------------------------------------------------------
 void setup() {
   Serial.begin(115200);
-  delay(1000);
+  delay(2000);
+  
+  Serial.println("\n\n=== ESP32 FIRESTORE SENSOR ===\n");
 
-  // Setup Pin Mode
+  // Pin ultrasonic
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
-  // Pin Analog (33, 34, 35) otomatis mode INPUT, tidak perlu declare pinMode
 
-  // Koneksi WiFi
+  // WiFi dengan retry lebih agresif
+  WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Menghubungkan ke WiFi");
-  while (WiFi.status() != WL_CONNECTED) {
+  
+  int wifiRetry = 0;
+  while (WiFi.status() != WL_CONNECTED && wifiRetry < 40) {
     Serial.print(".");
     delay(500);
+    wifiRetry++;
   }
-  Serial.println("\nWiFi Terhubung!");
-
-  // Konfigurasi Firebase
-  config.api_key = API_KEY;
   
-  if (Firebase.signUp(&config, &auth, "", "")) {
-    Serial.println("Sign-up berhasil");
-    signupOK = true;
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("\n✓ WiFi Terhubung!");
+    Serial.print("SSID: ");
+    Serial.println(WiFi.SSID());
+    Serial.print("IP: ");
+    Serial.println(WiFi.localIP());
+    Serial.print("Gateway: ");
+    Serial.println(WiFi.gatewayIP());
+    Serial.print("DNS: ");
+    Serial.println(WiFi.dnsIP());
+    Serial.print("Signal: ");
+    Serial.print(WiFi.RSSI());
+    Serial.println(" dBm");
   } else {
-    Serial.printf("Sign-up gagal: %s\n", config.signer.signupError.message.c_str());
+    Serial.println("\n✗ WiFi GAGAL! Restart ESP32...");
+    delay(5000);
+    ESP.restart();
   }
 
+  // Tampilkan info koneksi
+  Serial.println("\n=== INFO KONEKSI ===");
+  Serial.println("WiFi terhubung, siap untuk NTP sync");
+
+  // WAJIB: NTP untuk SSL
+  initNTP();
+
+  // Firebase Config dengan timeout lebih besar
+  config.api_key = API_KEY;
+  auth.user.email = USER_EMAIL;
+  auth.user.password = USER_PASSWORD;
   config.token_status_callback = tokenStatusCallback;
-  Firebase.begin(&config, &auth);
+  
+  // Timeout lebih besar untuk koneksi lambat
+  config.timeout.serverResponse = 15 * 1000;
+  config.timeout.socketConnection = 15 * 1000;
+  config.timeout.sslHandshake = 30 * 1000; // SSL butuh waktu lama
+  config.timeout.rtdbKeepAlive = 45 * 1000;
+  config.timeout.rtdbStreamReconnect = 1 * 1000;
+  config.timeout.rtdbStreamError = 3 * 1000;
+
   Firebase.reconnectWiFi(true);
-}
-
-// --------------------------------------------------------------
-// FUNGSI HELPER: Validasi Sensor
-// --------------------------------------------------------------
-bool isValidPH(float value) {
-  return (value >= PH_MIN && value <= PH_MAX);
-}
-
-bool isValidTDS(float value) {
-  return (value >= TDS_MIN && value <= TDS_MAX);
-}
-
-bool isValidTurbidity(float value) {
-  return (value >= TURBIDITY_MIN && value <= TURBIDITY_MAX);
-}
-
-bool isValidDistance(float value) {
-  return (value >= DISTANCE_MIN && value <= DISTANCE_MAX);
-}
-
-// --------------------------------------------------------------
-// FUNGSI HELPER: Membaca Sensor dengan Moving Average (5 samples)
-// --------------------------------------------------------------
-float readPHSensor() {
-  float sum = 0;
-  int validSamples = 0;
   
-  for(int i = 0; i < 5; i++) {
-    int adc = analogRead(PH_PIN);
-    float voltage = adc * (3.3 / 4095.0);
-    float ph = 7 + ((PH_VOLTAGE_REF - voltage) / PH_SLOPE) + PH_OFFSET;
-    
-    if(isValidPH(ph)) {
-      sum += ph;
-      validSamples++;
-    }
-    delay(10);
-  }
-  
-  if(validSamples > 0) {
-    return sum / validSamples;
-  }
-  return 7.0; // Default neutral pH if all readings invalid
-}
+  // Buffer lebih besar untuk SSL
+  fbdo.setBSSLBufferSize(8192, 2048); // 8KB RX, 2KB TX
+  fbdo.setResponseSize(4096);
 
-float readTDSSensor() {
-  float sum = 0;
-  int validSamples = 0;
-  float temperature = 25.0; // Asumsi suhu 25°C, bisa ditambahkan sensor suhu
+  Serial.println("\n=== FIREBASE AUTHENTICATION ===");
+  Serial.println("Memulai Sign In...");
+  Serial.println("(Proses ini bisa memakan waktu 30-60 detik)");
   
-  for(int i = 0; i < 5; i++) {
-    int adc = analogRead(TDS_PIN);
-    float voltage = adc * (3.3 / 4095.0);
-    
-    // Kompensasi suhu
-    float compensationCoefficient = 1.0 + 0.02 * (temperature - 25.0);
-    float compensationVoltage = voltage / compensationCoefficient;
-    
-    // TDS calculation (sesuai datasheet TDS sensor)
-    float tds = (133.42 * pow(compensationVoltage, 3) 
-                - 255.86 * pow(compensationVoltage, 2) 
-                + 857.39 * compensationVoltage) * TDS_KVALUE;
-    
-    if(isValidTDS(tds)) {
-      sum += tds;
-      validSamples++;
-    }
-    delay(10);
-  }
+  // Begin Firebase dulu (penting!)
+  Firebase.begin(&config, &auth);
   
-  if(validSamples > 0) {
-    return sum / validSamples;
-  }
-  return 0.0; // Default 0 if all readings invalid
-}
-
-float readTurbiditySensor() {
-  float sum = 0;
-  int validSamples = 0;
+  // Sign in dengan retry
+  int authRetry = 0;
+  bool authSuccess = false;
   
-  for(int i = 0; i < 5; i++) {
-    int adc = analogRead(TURBIDITY_PIN);
-    float voltage = adc * (3.3 / 4095.0);
+  while (authRetry < 3 && !authSuccess) {
+    Serial.printf("\nPercobaan %d/3...\n", authRetry + 1);
     
-    // Mapping voltage ke NTU (0-1000)
-    // Voltage tinggi = air jernih (NTU rendah)
-    // Voltage rendah = air keruh (NTU tinggi)
-    float turbidity;
-    if(voltage > TURB_VOLTAGE_CLEAR) {
-      turbidity = 0; // Air sangat jernih
-    } else if(voltage < TURB_VOLTAGE_MURKY) {
-      turbidity = 1000; // Air sangat keruh
+    // Coba sign in (bukan sign up)
+    // Kosongkan parameter ke-3 dan ke-4 untuk existing user
+    if (Firebase.signUp(&config, &auth, "", "")) {
+      Serial.println("✓ Authentication BERHASIL!");
+      firebaseReady = true;
+      authSuccess = true;
     } else {
-      // Linear interpolation
-      turbidity = ((TURB_VOLTAGE_CLEAR - voltage) / (TURB_VOLTAGE_CLEAR - TURB_VOLTAGE_MURKY)) * 1000;
-    }
-    
-    if(isValidTurbidity(turbidity)) {
-      sum += turbidity;
-      validSamples++;
-    }
-    delay(10);
-  }
-  
-  if(validSamples > 0) {
-    return sum / validSamples;
-  }
-  return 0.0; // Default 0 if all readings invalid
-}
-
-float readUltrasonicSensor() {
-  // Ambil 3 sample dan ambil median (untuk filter noise)
-  float distances[3];
-  
-  for(int i = 0; i < 3; i++) {
-    digitalWrite(TRIG_PIN, LOW);
-    delayMicroseconds(2);
-    digitalWrite(TRIG_PIN, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(TRIG_PIN, LOW);
-    
-    long duration = pulseIn(ECHO_PIN, HIGH, 30000); // Timeout 30ms
-    float distance = duration * 0.034 / 2;
-    
-    distances[i] = distance;
-    delay(50);
-  }
-  
-  // Sort untuk ambil median
-  for(int i = 0; i < 2; i++) {
-    for(int j = i + 1; j < 3; j++) {
-      if(distances[i] > distances[j]) {
-        float temp = distances[i];
-        distances[i] = distances[j];
-        distances[j] = temp;
+      Serial.print("✗ Authentication GAGAL: ");
+      Serial.println(config.signer.signupError.message.c_str());
+      authRetry++;
+      
+      if (authRetry < 3) {
+        Serial.println("Retry dalam 5 detik...");
+        delay(5000);
       }
     }
   }
   
-  float medianDistance = distances[1]; // Median value
-  
-  if(!isValidDistance(medianDistance)) {
-    return 0.0; // Invalid reading
+  if (!authSuccess) {
+    Serial.println("\n✗✗✗ FIREBASE AUTH GAGAL TOTAL! ✗✗✗");
+    Serial.println("\nPastikan di Firebase Console:");
+    Serial.println("1. Authentication > Sign-in method > Email/Password = ENABLED");
+    Serial.println("2. Authentication > Users > User sudah ada:");
+    Serial.println("   Email: esp32@example.com");
+    Serial.println("   Password: password123");
+    Serial.println("3. Project Settings > Web API Key sudah benar");
+    Serial.println("4. Firestore Database sudah dibuat");
+    Serial.println("\nESP32 akan tetap berjalan, coba lagi di loop...");
+    firebaseReady = false;
   }
   
-  return medianDistance;
+  Serial.println("\n=== SETUP SELESAI ===\n");
+  delay(2000);
 }
 
 // --------------------------------------------------------------
-// FUNGSI HELPER: Konversi TDS ke Salinity (sesuai Laravel)
+// BACA SENSOR
 // --------------------------------------------------------------
-float convertTDStoSalinity(float tds) {
-  return tds / (SALINITY_K * 1000.0);
+// --------------------------------------------------------------
+// BACA SENSOR pH (versi kalibrasi Arduino, disesuaikan ESP32)
+// --------------------------------------------------------------
+float bacaPH() {
+  const int numSamples = 5;     // jumlah sampel
+  float PH4 = 2.850;            // tegangan pada pH 4
+  float PH7 = 3.015;            // tegangan pada pH 7
+  
+  float PH_step = (PH7 - PH4) / 3.0;  //  step per 1 pH
+
+  long sum = 0;
+  for (int i = 0; i < numSamples; i++) {
+    sum += analogRead(PH_PIN);
+    delay(10);
+  }
+
+  float adcValue = sum / (float)numSamples;
+
+  // ESP32 ADC = 12 bit → 0–4095, tegangan referensi = 3.3V
+  float voltage = (3.3 / 4095.0) * adcValue;
+
+  // rumus pH hasil porting
+  float pH = 7.00 + ((voltage - PH7) / PH_step);
+
+  return pH;
+}
+
+
+float bacaTDS() {
+  int adc = analogRead(TDS_PIN);
+  float volt = adc * (3.3 / 4095.0);
+  float tds = (volt * 133.42 * volt * volt - 255.86 * volt * volt + 857.39 * volt) * 0.5;
+  if (tds < 0) tds = 0;
+  return tds;
+}
+
+float bacaTurbidity() {
+  int adc = analogRead(TURBIDITY_PIN);
+  float turb = map(adc, 0, 4095, 100, 0);
+  if (turb < 0) turb = 0;
+  return turb;
+}
+
+float bacaUltrasonic() {
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+
+  long dur = pulseIn(ECHO_PIN, HIGH, 30000);
+  return dur * 0.034 / 2;
 }
 
 // --------------------------------------------------------------
-// FUNGSI HELPER: Reconnect WiFi
-// --------------------------------------------------------------
-void checkWiFiConnection() {
+void loop() {
+  // Cek WiFi
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("WiFi terputus! Reconnecting...");
-    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-    
-    int retry = 0;
-    while (WiFi.status() != WL_CONNECTED && retry < 20) {
-      delay(500);
-      Serial.print(".");
-      retry++;
-    }
-    
-    if(WiFi.status() == WL_CONNECTED) {
-      Serial.println("\nWiFi Reconnected!");
-    } else {
-      Serial.println("\nWiFi Reconnect Failed!");
-    }
+    WiFi.reconnect();
+    delay(5000);
+    return;
   }
-}
 
-void loop() {
-  // Cek WiFi setiap 10 detik
-  if(millis() - wifiCheckPrevMillis > 10000) {
-    wifiCheckPrevMillis = millis();
-    checkWiFiConnection();
+  // Cek Firebase ready
+  if (!Firebase.ready()) {
+    Serial.println("Firebase belum ready, menunggu...");
+    delay(2000);
+    return;
   }
-  
-  // Kirim data setiap 3 detik
-  if (Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 3000 || sendDataPrevMillis == 0)) {
-    sendDataPrevMillis = millis();
 
-    // ==========================================
-    // BAGIAN 1: BACA SEMUA SENSOR (dengan Moving Average)
-    // ==========================================
+  if (millis() - previousMillis >= uploadInterval) {
+    previousMillis = millis();
 
-    Serial.println("\n=== MEMBACA SENSOR ===");
-    
-    // --- 1. Sensor pH ---
-    float pHValue = readPHSensor();
+    // Baca semua sensor
+    float ph = bacaPH();
+    float tds = bacaTDS();
+    float turb = bacaTurbidity();
+    float jarak = bacaUltrasonic();
 
-    // --- 2. Sensor TDS ---
-    float tdsValue = readTDSSensor();
+    // Serial output
+    Serial.println("\n========== DATA SENSOR ==========");
+    Serial.printf("pH          : %.2f\n", ph);
+    Serial.printf("TDS         : %.2f ppm\n", tds);
+    Serial.printf("Turbidity   : %.2f NTU\n", turb);
+    Serial.printf("Ultrasonic  : %.2f cm\n", jarak);
+    Serial.printf("Free Heap   : %d bytes\n", ESP.getFreeHeap());
+    Serial.println("=================================\n");
 
-    // --- 3. Sensor Turbidity (Kekeruhan) ---
-    float turbidityValue = readTurbiditySensor();
-
-    // --- 4. Sensor Ultrasonic (Jarak/Level Air) ---
-    float ultrasonicValue = readUltrasonicSensor();
-    
-    // --- 5. Hitung Salinity dari TDS (opsional, Laravel juga hitung) ---
-    float salinitasValue = convertTDStoSalinity(tdsValue);
-
-    // Debug di Serial Monitor
-    Serial.println("--- HASIL BACA SENSOR ---");
-    Serial.printf("pH: %.2f %s\n", pHValue, isValidPH(pHValue) ? "✅" : "⚠️ OUT OF RANGE");
-    Serial.printf("TDS: %.2f ppm %s\n", tdsValue, isValidTDS(tdsValue) ? "✅" : "⚠️ OUT OF RANGE");
-    Serial.printf("Turbidity: %.2f NTU %s\n", turbidityValue, isValidTurbidity(turbidityValue) ? "✅" : "⚠️ OUT OF RANGE");
-    Serial.printf("Ultrasonic: %.2f cm %s\n", ultrasonicValue, isValidDistance(ultrasonicValue) ? "✅" : "⚠️ OUT OF RANGE");
-    Serial.printf("Salinity: %.2f PPT\n", salinitasValue);
-
-    // ==========================================
-    // BAGIAN 2: VALIDASI DATA SEBELUM KIRIM
-    // ==========================================
-    
-    bool dataValid = true;
-    String errorMsg = "";
-    
-    if(!isValidPH(pHValue)) {
-      dataValid = false;
-      errorMsg += "pH out of range; ";
-    }
-    if(!isValidTDS(tdsValue)) {
-      dataValid = false;
-      errorMsg += "TDS out of range; ";
-    }
-    if(!isValidTurbidity(turbidityValue)) {
-      dataValid = false;
-      errorMsg += "Turbidity out of range; ";
-    }
-    if(!isValidDistance(ultrasonicValue)) {
-      dataValid = false;
-      errorMsg += "Ultrasonic out of range; ";
-    }
-    
-    if(!dataValid) {
-      Serial.println("⚠️ DATA TIDAK VALID: " + errorMsg);
-      Serial.println("Data tidak dikirim ke Firestore.");
-      Serial.println("-------------------------");
-      return; // Skip sending invalid data
-    }
-
-    // ==========================================
-    // BAGIAN 3: PACKING JSON & KIRIM
-    // ==========================================
-    
+    // Buat JSON untuk Firestore
     FirebaseJson content;
+    content.set("fields/pHValue/doubleValue", ph);
+    content.set("fields/TDSValue/doubleValue", tds);
+    content.set("fields/turbidityValue/doubleValue", turb);
+    content.set("fields/ultrasonicValue/doubleValue", jarak);
 
-    // Field sesuai struktur Firestore
-    content.set("fields/pHValue/doubleValue", pHValue);
-    content.set("fields/TDSValue/doubleValue", tdsValue);
-    content.set("fields/turbidityValue/doubleValue", turbidityValue);
-    content.set("fields/ultrasonicValue/doubleValue", ultrasonicValue);
+    Serial.println("📤 Mengirim ke Firestore...");
+
+    String documentPath = "sensorRead/dataSensor";
     
-    // OPTIONAL: Kirim salinitasValue juga (meski Laravel akan recalculate)
-    // Ini berguna untuk backup dan debugging
-    content.set("fields/salinitasValue/doubleValue", salinitasValue);
-
-    // Path: Collection "sensorRead", Document "dataSensor"
-    String documentPath = "sensorRead/dataSensor"; 
-
-    Serial.print("Mengirim ke Firestore... ");
-    
-    // Gunakan patchDocument agar hanya mengupdate field yang dikirim
-    if (Firebase.Firestore.patchDocument(&fbdo, FIREBASE_PROJECT_ID, "", documentPath.c_str(), content.raw(), "")) {
-        Serial.println("BERHASIL! ✅");
-        consecutiveFirebaseErrors = 0; // Reset error counter
+    if (Firebase.Firestore.patchDocument(
+          &fbdo,
+          FIREBASE_PROJECT_ID,
+          "",
+          documentPath.c_str(),
+          content.raw(),
+          "pHValue,TDSValue,turbidityValue,ultrasonicValue"
+        )) {
+      
+      Serial.println("✓✓✓ BERHASIL KIRIM KE FIRESTORE! ✓✓✓");
+      Serial.println("📊 Data yang dikirim:");
+      Serial.printf("   - pHValue: %.2f\n", ph);
+      Serial.printf("   - TDSValue: %.2f PPM\n", tds);
+      Serial.printf("   - turbidityValue: %.2f NTU\n", turb);
+      Serial.printf("   - ultrasonicValue: %.2f cm\n", jarak);
+      Serial.println("⚙  salinitasValue akan di-update oleh Laravel backend");
+      
     } else {
-        Serial.println("GAGAL ❌");
-        Serial.println("Error: " + fbdo.errorReason());
-        consecutiveFirebaseErrors++;
-        
-        // Jika terlalu banyak error berturut-turut, restart ESP32
-        if(consecutiveFirebaseErrors > 10) {
-          Serial.println("⚠️ Terlalu banyak error! Restarting ESP32...");
-          delay(1000);
-          ESP.restart();
-        }
+      Serial.println("✗✗✗ GAGAL KIRIM! ✗✗✗");
+      Serial.print("Error: ");
+      Serial.println(fbdo.errorReason());
+      Serial.print("HTTP Code: ");
+      Serial.println(fbdo.httpCode());
     }
-    Serial.println("-------------------------");
+    
+    Serial.println("\n⏱ Menunggu " + String(uploadInterval/1000) + " detik...\n");
   }
 }

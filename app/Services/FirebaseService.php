@@ -5,6 +5,8 @@ namespace App\Services;
 use Kreait\Firebase\Factory;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
+use Carbon\Carbon;
 
 class FirebaseService
 {
@@ -32,15 +34,40 @@ class FirebaseService
      */
     public function getLatestSensorData()
     {
+        // Try to get cached data first
+        $cacheKey = 'latest_sensor_data';
+        
         try {
             // Build REST API URL with API key for authentication
             $url = "{$this->baseUrl}/sensorRead/dataSensor?key={$this->apiKey}";
             
-            // Make GET request
-            $response = Http::get($url);
+            // Make GET request with timeout
+            $response = Http::timeout(10)->get($url);
             
             if (!$response->successful()) {
-                Log::warning('Sensor data document not found or request failed: ' . $response->status() . ' - ' . $response->body());
+                $statusCode = $response->status();
+                $errorBody = $response->body();
+                
+                // Log different error types
+                if ($statusCode === 429) {
+                    Log::warning('Firebase quota exceeded - using cached data');
+                    // Return cached data if available
+                    if (Cache::has($cacheKey)) {
+                        Log::info('Returning cached sensor data');
+                        return Cache::get($cacheKey);
+                    }
+                } elseif ($statusCode === 404) {
+                    Log::warning('Sensor data document not found');
+                } else {
+                    Log::warning("Sensor data request failed: $statusCode - $errorBody");
+                }
+                
+                // If quota exceeded, try to get from sensorHistory instead
+                if ($statusCode === 429) {
+                    Log::info('Attempting to fetch from sensorHistory collection');
+                    return $this->getLatestFromHistory();
+                }
+                
                 return null;
             }
             
@@ -72,7 +99,7 @@ class FirebaseService
             }
             
             // Convert field names to match Laravel convention
-            return [
+            $result = [
                 'ph_value' => $phValue,
                 'tds_value' => $tdsValue, // PPM
                 'turbidity' => $turbidityValue, // NTU
@@ -82,8 +109,71 @@ class FirebaseService
                 'timestamp' => $data['updateTime'] ?? now()->toDateTimeString(),
             ];
             
+            // Cache the result for 30 minutes (reduced Firebase reads)
+            Cache::put($cacheKey, $result, now()->addMinutes(30));
+            
+            return $result;
+            
         } catch (\Exception $e) {
             Log::error('Error fetching sensor data from Firestore: ' . $e->getMessage());
+            
+            // Try to return cached data on exception
+            if (Cache::has($cacheKey)) {
+                Log::info('Returning cached data due to exception');
+                return Cache::get($cacheKey);
+            }
+            
+            // Try to get from history as last resort
+            return $this->getLatestFromHistory();
+        }
+    }
+    
+    /**
+     * Get latest sensor data from sensorHistory collection (fallback when quota exceeded)
+     */
+    private function getLatestFromHistory()
+    {
+        try {
+            // Query sensorHistory collection, order by timestamp descending, limit 1
+            $url = "{$this->baseUrl}/sensorHistory?orderBy=timestamp desc&pageSize=1";
+            
+            $response = Http::timeout(5)->get($url);
+            
+            if (!$response->successful()) {
+                Log::warning('Failed to fetch from sensorHistory: ' . $response->status());
+                return null;
+            }
+            
+            $data = $response->json();
+            
+            if (!isset($data['documents']) || count($data['documents']) === 0) {
+                Log::warning('No documents found in sensorHistory');
+                return null;
+            }
+            
+            $doc = $data['documents'][0];
+            $fields = $doc['fields'] ?? [];
+            
+            // Extract values
+            $result = [
+                'ph_value' => $this->extractValue($fields, 'ph_value') ?? $this->extractValue($fields, 'pHValue'),
+                'tds_value' => $this->extractValue($fields, 'tds_value') ?? $this->extractValue($fields, 'TDSValue'),
+                'turbidity' => $this->extractValue($fields, 'turbidity') ?? $this->extractValue($fields, 'turbidityValue'),
+                'water_level' => $this->extractValue($fields, 'water_level') ?? $this->extractValue($fields, 'ultrasonicValue'),
+                'salinity_ppt' => $this->extractValue($fields, 'salinity_ppt') ?? $this->extractValue($fields, 'salinitasValue'),
+                'salinity' => $this->extractValue($fields, 'salinity') ?? $this->extractValue($fields, 'salinitasValue'),
+                'timestamp' => $this->extractValue($fields, 'timestamp') ?? ($doc['updateTime'] ?? now()->toDateTimeString()),
+            ];
+            
+            Log::info('Successfully fetched data from sensorHistory (fallback)');
+            
+            // Cache this data for 30 minutes
+            Cache::put('latest_sensor_data', $result, now()->addMinutes(30));
+            
+            return $result;
+            
+        } catch (\Exception $e) {
+            Log::error('Error fetching from sensorHistory: ' . $e->getMessage());
             return null;
         }
     }
@@ -222,9 +312,13 @@ class FirebaseService
     /**
      * Get historical data from Firestore with date range
      * Collection: sensorHistory
+     * OPTIMIZED: Reduced default limit to prevent quota exhaustion
      */
-    public function getHistoricalData($startDate, $endDate, $orderBy = 'timestamp', $limit = 1000)
+    public function getHistoricalData($startDate, $endDate, $orderBy = 'timestamp', $limit = 168)
     {
+        // Create cache key based on parameters
+        $cacheKey = "historical_data_{$startDate}_{$endDate}_{$orderBy}_{$limit}";
+        
         try {
             // Convert string dates to Carbon if needed
             if (is_string($startDate)) {
@@ -270,10 +364,27 @@ class FirebaseService
             ];
             
             $url = "https://firestore.googleapis.com/v1/projects/{$this->projectId}/databases/(default)/documents:runQuery";
-            $response = Http::post($url, $query);
+            $response = Http::timeout(15)->post($url, $query);
             
             if (!$response->successful()) {
-                Log::error('Failed to fetch historical data: ' . $response->status());
+                $statusCode = $response->status();
+                
+                if ($statusCode === 429) {
+                    Log::warning('Firebase quota exceeded for historical data - checking cache');
+                    // Return cached data if available
+                    if (Cache::has($cacheKey)) {
+                        Log::info('Returning cached historical data');
+                        return Cache::get($cacheKey);
+                    }
+                }
+                
+                Log::error('Failed to fetch historical data: ' . $statusCode);
+                
+                // Return cached data as fallback
+                if (Cache::has($cacheKey)) {
+                    return Cache::get($cacheKey);
+                }
+                
                 return [];
             }
             
@@ -297,10 +408,76 @@ class FirebaseService
                 }
             }
             
+            // Cache the result for 60 minutes (1 hour) to reduce Firebase reads
+            if (!empty($data)) {
+                Cache::put($cacheKey, $data, now()->addMinutes(60));
+            }
+            
             return $data;
             
         } catch (\Exception $e) {
             Log::error('Error fetching historical data: ' . $e->getMessage());
+            
+            // Return cached data if available
+            if (Cache::has($cacheKey)) {
+                Log::info('Returning cached historical data due to exception');
+                return Cache::get($cacheKey);
+            }
+            
+            return [];
+        }
+    }
+    
+    /**
+     * Get aggregated daily data (1 record per day) for charts
+     * Much more efficient than fetching all raw data
+     */
+    public function getAggregatedDailyData($startDate, $endDate)
+    {
+        $cacheKey = "daily_aggregated_{$startDate}_{$endDate}";
+        
+        // Check cache first (cached for 2 hours)
+        if (Cache::has($cacheKey)) {
+            Log::info('Returning cached daily aggregated data');
+            return Cache::get($cacheKey);
+        }
+        
+        try {
+            // Get raw data with limit
+            $rawData = $this->getHistoricalData($startDate, $endDate, 'timestamp', 500);
+            
+            if (empty($rawData)) {
+                return [];
+            }
+            
+            // Group by date and aggregate
+            $aggregated = collect($rawData)
+                ->groupBy(function($item) {
+                    return Carbon::parse($item['timestamp'])->format('Y-m-d');
+                })
+                ->map(function($group) {
+                    return [
+                        'date' => $group->first()['timestamp'],
+                        'ph_avg' => round($group->avg('ph_value'), 2),
+                        'tds_avg' => round($group->avg('tds_value'), 2),
+                        'turbidity_avg' => round($group->avg('turbidity'), 2),
+                        'water_level_avg' => round($group->avg('water_level'), 2),
+                        'score_avg' => round($group->avg('water_quality_score'), 2),
+                        'score_min' => round($group->min('water_quality_score'), 2),
+                        'score_max' => round($group->max('water_quality_score'), 2),
+                        'count' => $group->count(),
+                    ];
+                })
+                ->values()
+                ->toArray();
+            
+            // Cache for 2 hours
+            Cache::put($cacheKey, $aggregated, now()->addHours(2));
+            
+            return $aggregated;
+            
+        } catch (\Exception $e) {
+            Log::error('Error getting aggregated daily data: ' . $e->getMessage());
             return [];
         }
     }

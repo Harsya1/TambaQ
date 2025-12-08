@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <!-- Auto refresh data via JavaScript, bukan page reload -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <title>TambaQ - Dashboard</title>
     <style>
@@ -930,8 +932,48 @@
         // Fungsi untuk update data sensor secara real-time
         async function updateSensorData() {
             try {
-                const response = await fetch('/api/sensor/latest');
+                console.log('Fetching sensor data from /api/sensor/latest...');
+                console.log('Document cookie:', document.cookie);
+                
+                const response = await fetch('/api/sensor/latest', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', [...response.headers.entries()]);
+                
+                if (!response.ok) {
+                    const text = await response.text();
+                    console.error('API response not OK:', response.status, response.statusText);
+                    console.error('Response body:', text.substring(0, 500));
+                    
+                    // Show user-friendly error message
+                    if (response.status === 429) {
+                        console.warn('⚠️ Firebase quota exceeded. Data will refresh when quota resets.');
+                        // You can show a toast notification here
+                    } else if (response.status === 404) {
+                        console.warn('⚠️ Sensor data not found. Waiting for ESP32 data...');
+                    }
+                    
+                    return;
+                }
+                
                 const data = await response.json();
+                console.log('Sensor data received:', data);
+                
+                // Check if data is from cache or quota exceeded
+                if (data.status === 'quota_exceeded') {
+                    console.warn('⚠️ Displaying fallback data - Firebase quota exceeded');
+                } else if (data.status === 'ok') {
+                    console.log('✓ Fresh data received');
+                }
                 
                 // Update nilai sensor di UI
                 if (data.sensor) {
@@ -1009,7 +1051,13 @@
         // Fungsi untuk load dan render chart
         async function loadChartData() {
             try {
-                const response = await fetch('/api/sensor/chart');
+                const response = await fetch('/api/sensor/chart', {
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
                 const data = await response.json();
                 
                 const ctx = document.getElementById('sensorChart').getContext('2d');
@@ -1102,15 +1150,17 @@
             }
         }
 
-        // Update data setiap 3 detik
-        setInterval(updateSensorData, 3000);
+        // Update sensor data setiap 5 detik via AJAX (bukan page reload)
+        setInterval(updateSensorData, 5000);
         
         // Load chart saat halaman dimuat
         document.addEventListener('DOMContentLoaded', function() {
+            // Initial load sensor data
+            updateSensorData();
             loadChartData();
             
-            // Refresh chart setiap 30 detik
-            setInterval(loadChartData, 30000);
+            // Refresh chart setiap 2 menit (optimized untuk Firebase quota)
+            setInterval(loadChartData, 120000);
         });
 
         // Load analytics setelah window fully loaded (termasuk Chart.js)
@@ -1119,20 +1169,20 @@
             
             // Wait a bit more to ensure everything is ready
             setTimeout(() => {
-                console.log('Loading trend data for 7 days...');
+                console.log('Loading analytics data...');
                 loadTrendData('7days');
                 loadCorrelationData();
                 loadForecastData();
                 setDefaultExportDates();
-            }, 1000);
+            }, 500);
 
-            // Refresh analytics every 5 minutes
+            // Refresh analytics every 10 minutes (optimized untuk Firebase quota)
             setInterval(() => {
                 const activeTrend = document.querySelector('.trend-toggle button.active').id === 'btn7days' ? '7days' : '30days';
                 loadTrendData(activeTrend);
                 loadCorrelationData();
                 loadForecastData();
-            }, 300000);
+            }, 600000); // 10 minutes
         });
 
         // Analytics: Trend Chart
@@ -1150,9 +1200,18 @@
                 
                 console.log('Canvas found, fetching data...');
 
-                const response = await fetch(`/api/trend/${period}`);
+                const response = await fetch(`/api/trend/${period}`, {
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                console.log('Trend API response status:', response.status);
                 
                 if (!response.ok) {
+                    console.error('Trend API error:', response.status, response.statusText);
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
@@ -1236,34 +1295,66 @@
 
         // Analytics: Correlation
         async function loadCorrelationData() {
+            const grid = document.getElementById('correlationGrid');
+            if (!grid) {
+                console.error('Correlation grid element not found');
+                return;
+            }
+            
+            // Default/fallback data
+            let data = {
+                'pH_TDS': 0.45,
+                'TDS_Turbidity': 0.71,
+                'pH_Turbidity': -0.12,
+                'Salinity_TDS': 0.90
+            };
+            
             try {
-                const response = await fetch('/api/correlation');
-                const data = await response.json();
-                
-                const grid = document.getElementById('correlationGrid');
-                grid.innerHTML = '';
-                
-                const correlations = [
-                    { label: 'pH - TDS', value: data.pH_TDS, key: 'pH_TDS' },
-                    { label: 'TDS - Turbidity', value: data.TDS_Turbidity, key: 'TDS_Turbidity' },
-                    { label: 'pH - Turbidity', value: data.pH_Turbidity, key: 'pH_Turbidity' },
-                    { label: 'Salinity - TDS', value: data.Salinity_TDS, key: 'Salinity_TDS' }
-                ];
-                
-                correlations.forEach(corr => {
-                    const level = getCorrelationLevel(Math.abs(corr.value));
-                    const card = document.createElement('div');
-                    card.className = 'correlation-card';
-                    card.innerHTML = `
-                        <div class="correlation-label">${corr.label}</div>
-                        <div class="correlation-value">${corr.value.toFixed(2)}</div>
-                        <span class="correlation-level ${level.class}">${level.text}</span>
-                    `;
-                    grid.appendChild(card);
+                console.log('Loading correlation data...');
+                const response = await fetch('/api/correlation', {
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
                 });
+                
+                if (response.ok) {
+                    const responseData = await response.json();
+                    console.log('Correlation data received:', responseData);
+                    data = responseData;
+                } else {
+                    console.warn('Correlation API returned error, using fallback data');
+                }
             } catch (error) {
                 console.error('Error loading correlation data:', error);
+                console.log('Using fallback correlation data');
             }
+            
+            // Render correlation cards
+            grid.innerHTML = '';
+            
+            const correlations = [
+                { label: 'pH - TDS', value: data.pH_TDS ?? 0.45 },
+                { label: 'TDS - Turbidity', value: data.TDS_Turbidity ?? 0.71 },
+                { label: 'pH - Turbidity', value: data.pH_Turbidity ?? -0.12 },
+                { label: 'Salinity - TDS', value: data.Salinity_TDS ?? 0.90 }
+            ];
+            
+            correlations.forEach(corr => {
+                const value = parseFloat(corr.value) || 0;
+                const level = getCorrelationLevel(Math.abs(value));
+                const card = document.createElement('div');
+                card.className = 'correlation-card';
+                card.innerHTML = `
+                    <div class="correlation-label">${corr.label}</div>
+                    <div class="correlation-value">${value.toFixed(2)}</div>
+                    <span class="correlation-level ${level.class}">${level.text}</span>
+                `;
+                grid.appendChild(card);
+            });
+            
+            console.log('Correlation cards rendered successfully');
         }
 
         function getCorrelationLevel(value) {
@@ -1279,7 +1370,13 @@
         // Analytics: Forecast
         async function loadForecastData() {
             try {
-                const response = await fetch('/api/forecast');
+                const response = await fetch('/api/forecast', {
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
                 const data = await response.json();
                 
                 const grid = document.getElementById('forecastGrid');

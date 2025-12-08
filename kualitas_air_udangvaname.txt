@@ -1,0 +1,395 @@
+
+Analisis Komprehensif Parameter Kualitas Air dan Strategi Manajemen Optimal dalam Akuakultur Udang Vaname (Litopenaeus vannamei)
+
+
+Ringkasan Eksekutif
+
+Laporan ini menyajikan tinjauan teknis mendalam dan data lengkap mengenai parameter kualitas air kritis—khususnya pH, salinitas, Total Dissolved Solids (TDS), dan kekeruhan—dalam budidaya udang Vaname (Litopenaeus vannamei). Analisis ini disusun untuk memenuhi kebutuhan pelaku industri akuakultur akan referensi standar yang tidak hanya menyajikan angka, melainkan juga menguraikan mekanisme fisiologis, interaksi kimiawi, dan protokol manajemen risiko.
+Berdasarkan sintesis dari Standar Nasional Indonesia (SNI), pedoman Food and Agriculture Organization (FAO), serta studi empiris terkini dari berbagai sistem budidaya (intensif, semi-intensif, dan supra-intensif), laporan ini menegaskan bahwa keberhasilan produksi tidak bergantung pada parameter tunggal, melainkan pada keseimbangan dinamis antar-variabel. Data menunjukkan bahwa salinitas 15–30 ppt, pH 7,5–8,5, dan alkalinitas 100–150 mg/L merupakan baseline optimal.1 Namun, dalam praktik budidaya modern, rasio ionik (mineral balance) pada level TDS spesifik dan manajemen turbiditas untuk kesehatan insang menjadi faktor determinan produktivitas. Laporan ini juga mengintegrasikan strategi mitigasi terhadap anomali cuaca dan fluktuasi diurnal yang sering menjadi penyebab kegagalan panen.
+
+1. Pendahuluan: Fisiologi Lingkungan dan Konteks Industri
+
+
+1.1 Signifikansi Ekonomi dan Biologis Udang Vaname
+
+Udang Vaname (Litopenaeus vannamei), yang berasal dari perairan Pasifik Timur, telah mendominasi industri akuakultur global, menggantikan Udang Windu (Penaeus monodon) di banyak wilayah Asia, termasuk Indonesia. Keunggulan spesies ini terletak pada laju pertumbuhannya yang cepat, ketahanan terhadap penyakit, dan toleransi lingkungan yang luas (euryhaline).3 Kemampuan adaptasi ini memungkinkan L. vannamei dibudidayakan dalam rentang salinitas ekstrem, dari 0,5 ppt hingga 45 ppt, menjadikannya kandidat ideal untuk ekspansi ke tambak inland (darat) bersalinitas rendah.4
+Namun, toleransi biologis ini bukan tanpa batas. Intensifikasi sistem budidaya, dengan padat tebar yang mencapai ratusan ekor per meter persegi, menempatkan tekanan ekologis yang masif pada kolom air. Dalam konteks ini, kualitas air bukan sekadar media fisik, melainkan penyedia kebutuhan fisiologis fundamental: oksigen untuk respirasi, ion untuk osmoregulasi, dan lingkungan imunologis yang menekan virulensi patogen.6
+
+1.2 Filosofi Manajemen Kualitas Air
+
+Paradigma modern dalam akuakultur bergeser dari sekadar "memelihara udang" menjadi "memelihara air". Kualitas air yang buruk berkorelasi langsung dengan stres fisiologis yang menekan sistem imun udang, membuka jalan bagi infeksi oportunistik seperti Vibrio spp. dan virus (WSSV, IMNV). Data dari berbagai studi lapangan menunjukkan bahwa parameter seperti pH, salinitas, dan kekeruhan memiliki efek domino. Sebagai contoh, fluktuasi pH yang tampak sepele dapat mengubah keseimbangan kimia amonia, mengubahnya dari bentuk ion amonium (NH4+) yang relatif aman menjadi gas amonia (NH3) yang sangat toksik.7 Oleh karena itu, pemahaman mendalam tentang data lengkap dan interaksi antar-parameter adalah prasyarat mutlak bagi keberhasilan budidaya.
+
+2. Derajat Keasaman (pH): Keseimbangan Kimia dan Stabilitas Fisiologis
+
+Parameter pH (Power of Hydrogen) merepresentasikan konsentrasi ion hidrogen dalam air, yang menentukan sifat asam atau basa dari lingkungan budidaya. Bagi L. vannamei, pH adalah parameter kritis yang mempengaruhi fungsi enzimatis, proses molting, dan toksisitas senyawa metabolit.
+
+2.1 Standar Optimal dan Toleransi Spesies
+
+Mengacu pada Standar Nasional Indonesia (SNI) 8037.1:2014 dan SNI 8008:2014, kisaran pH yang direkomendasikan untuk budidaya udang Vaname adalah 7,5 – 8,5.1 Studi lapangan di tambak intensif juga mengonfirmasi bahwa pertumbuhan optimal tercapai pada pH 7,8 – 8,5, dengan titik kritis kematian (lethal point) berada di bawah 6,0 atau di atas 9,5.2
+Namun, nilai absolut pH bukanlah satu-satunya indikator. Stabilitas harian (fluktuasi diurnal) memegang peranan yang jauh lebih vital. Perbedaan pH antara pagi (subuh) dan sore hari idealnya tidak melebihi 0,5 satuan.8 Fluktuasi yang melebihi angka ini mengindikasikan ketidakstabilan sistem penyangga (buffer) karbonat dan aktivitas fotosintesis yang tidak terkendali, yang dapat memicu stres osmotik akut pada udang.
+Tabel 1. Spektrum Nilai pH dan Respon Fisiologis Udang Vaname
+Nilai pH
+Status Kondisi
+Dampak Fisiologis dan Konsekuensi Lingkungan
+Tindakan Diperlukan
+< 6,5
+Asam Kritis
+Pertumbuhan terhambat drastis, cangkang menjadi lunak (gagal kalsifikasi). Peningkatan toksisitas Hidrogen Sulfida (H2S). Kerentanan tinggi terhadap penyakit jamur.
+Pengapuran segera dengan CaO atau Ca(OH)2.
+6,5 – 7,4
+Sub-optimal Rendah
+Udang bertahan hidup namun nafsu makan menurun. Metabolisme melambat. Stres kronis dapat terjadi.
+Aplikasi kapur pertanian (CaCO3) atau Dolomit.
+7,5 – 8,5
+Optimal
+Aktivitas enzimatis pencernaan maksimal. Proses osmoregulasi efisien. Keseimbangan toksisitas amonia terjaga.
+Pertahankan alkalinitas >100 ppm.
+8,6 – 9,0
+Sub-optimal Tinggi
+Pertumbuhan plankton sangat cepat (blooming). Risiko peningkatan toksisitas Amonia (NH3) mulai signifikan.
+Kurangi pakan, ganti air parsial.
+> 9,0
+Basa Kritis
+Kerusakan jaringan insang (hiperplasia), penghambatan ekskresi amonia dari tubuh udang (autotoksikasi). Risiko kematian massal.
+Aplikasi sumber karbon (molase/gula) atau asam organik.
+
+Sumber Data: Diolah dari 1
+
+2.2 Mekanisme Dinamika pH: Interaksi Fotosintesis dan Respirasi
+
+Nilai pH di tambak udang tidak pernah statis; ia berosilasi mengikuti ritme sirkadian aktivitas biologis. Pemahaman tentang mekanisme ini krusial untuk interpretasi data pemantauan harian.
+Fase Siang (Dominasi Fotosintesis): Fitoplankton dan tanaman air memanfaatkan energi matahari untuk fotosintesis. Proses ini mengonsumsi Karbon Dioksida (CO2) terlarut dalam air. Karena CO2 dalam air membentuk asam lemah (asam karbonat, H2CO3), pengurangan CO2 menyebabkan penurunan keasaman, yang berarti pH air meningkat. Puncak pH tertinggi biasanya terjadi pada sore hari (pukul 14.00 – 16.00).6
+Fase Malam (Dominasi Respirasi): Saat matahari terbenam, fotosintesis berhenti total. Namun, respirasi oleh udang, plankton, dan bakteri pengurai terus berlangsung, melepaskan CO2 ke dalam air. Akumulasi CO2 ini membentuk asam karbonat, yang menyebabkan pH air menurun. Titik terendah pH biasanya tercatat menjelang matahari terbit (pukul 04.00 – 06.00).11
+Implikasi teknis dari dinamika ini adalah bahwa selisih pH pagi-sore mencerminkan kepadatan plankton. Jika pH pagi 7,5 dan pH sore melonjak hingga 9,5, ini adalah tanda bahaya blooming plankton yang berlebihan. Kondisi ini berisiko menyebabkan plankton crash (kematian massal plankton) yang akan meruntuhkan kualitas air secara total.12
+
+2.3 Alkalinitas sebagai Penyangga pH
+
+Kestabilan pH sangat bergantung pada alkalinitas total air. Alkalinitas adalah ukuran kapasitas air untuk menetralisir asam, terutama ditentukan oleh konsentrasi ion bikarbonat (HCO3-) dan karbonat (CO3^2-).
+Standar Alkalinitas: Untuk menjaga pH agar stabil di kisaran 7,5–8,5, alkalinitas harus dipertahankan pada 100 – 150 mg/L CaCO3.1
+Mekanisme Buffer: Sistem penyangga karbonat bekerja dengan menyerap kelebihan ion hidrogen (saat pH turun) atau melepaskannya (saat pH naik). Jika alkalinitas rendah (< 80 mg/L), kapasitas penyangga ini hilang, menyebabkan pH berfluktuasi liar yang mematikan bagi udang.13
+Interaksi dengan Kapur: Aplikasi kapur seperti Dolomit (CaMg(CO3)2) atau Kapur Pertanian (CaCO3) tidak hanya meningkatkan pH secara perlahan tetapi yang lebih penting adalah meningkatkan alkalinitas, memberikan stabilitas jangka panjang.15
+
+3. Salinitas dan Osmoregulasi: Adaptasi pada Berbagai Lingkungan
+
+Salinitas, yang menyatakan konsentrasi total garam terlarut (ppt atau g/L), adalah parameter fisik yang menentukan beban kerja osmotik udang. Meskipun L. vannamei dapat hidup di air tawar hingga air laut hipersalin, performa pertumbuhan dan kelangsungan hidupnya sangat bergantung pada manajemen salinitas yang tepat.
+
+3.1 Profil Salinitas Optimal
+
+Berdasarkan SNI 8037.1:2014, kisaran salinitas optimal untuk pembesaran udang Vaname adalah 15 – 30 ppt.1 Namun, studi global dan praktik lapangan menunjukkan variasi toleransi yang luas:
+Budidaya Laut (Marine Culture): 25 – 35 ppt.
+Budidaya Air Payau (Brackish Water): 10 – 25 ppt (Sering dianggap sebagai "sweet spot" pertumbuhan).
+Budidaya Salinitas Rendah (Low Salinity/Inland): 0,5 – 5 ppt.
+
+3.2 Mekanisme Osmoregulasi dan Titik Isosmotik
+
+Udang Vaname adalah osmoregulator yang efisien, memiliki kemampuan untuk mempertahankan konsentrasi garam internal tubuh yang stabil meskipun lingkungan eksternalnya berubah. Titik kuncinya adalah Titik Isosmotik, yang berada pada kisaran 24 – 25 ppt (sekitar 700-750 mOsm/kg).5
+Di Atas Titik Isosmotik (> 25 ppt): Lingkungan bersifat hiperosmotik. Air cenderung keluar dari tubuh udang. Udang merespons dengan meminum air laut dan secara aktif mengekskresikan kelebihan garam melalui insang (regulasi hipoosmotik). Proses ini membutuhkan energi metabolik.
+Di Bawah Titik Isosmotik (< 25 ppt): Lingkungan bersifat hipoosmotik. Air cenderung masuk ke dalam tubuh udang, dan garam cenderung keluar. Udang harus memompa air keluar melalui urin (yang encer) dan secara aktif menyerap garam dari air melalui insang (regulasi hiperosmotik).17
+Implikasi Energi: Pada salinitas 15–25 ppt, gradien osmotik antara tubuh udang dan air adalah yang paling minimal. Ini berarti udang mengeluarkan energi paling sedikit untuk osmoregulasi, sehingga alokasi energi untuk pertumbuhan (protein retention) menjadi maksimal.18
+
+3.3 Budidaya pada Salinitas Rendah (Low Salinity Farming)
+
+Tren budidaya udang di lokasi yang jauh dari laut (inland) semakin berkembang. Namun, data menunjukkan tantangan spesifik pada salinitas < 5 ppt:
+Stres Osmotik: Pada salinitas sangat rendah (< 2 ppt), udang muda (post-larva) sering mengalami kesulitan mempertahankan integritas sel, yang berujung pada kematian massal jika tidak diaklimatisasi dengan benar.20
+Kebutuhan Mineral: Pada salinitas rendah, air seringkali kekurangan ion spesifik seperti Kalium (K+) dan Magnesium (Mg2+), meskipun salinitas totalnya tampak memadai. Kekurangan ini menyebabkan kram otot dan kegagalan molting.4
+
+3.4 Protokol Aklimatisasi
+
+Pemindahan benur (PL) dari hatchery (biasanya salinitas 30 ppt) ke tambak pembesaran dengan salinitas berbeda memerlukan protokol aklimatisasi yang ketat. Penurunan salinitas mendadak (shock) dapat merusak struktur insang dan menyebabkan kematian tertunda.
+Metode Bertahap: Penurunan salinitas disarankan dilakukan secara gradual, misalnya 1–2 ppt per jam atau per hari tergantung usia benur. Data menunjukkan bahwa aklimatisasi bertahap selama 5–10 hari memberikan tingkat kelangsungan hidup (SR) yang jauh lebih tinggi (hingga 88%) dibandingkan penurunan drastis.18
+Batas Toleransi Usia: Benur stadium PL10–PL12 memiliki toleransi yang lebih rendah dibandingkan udang juvenil atau dewasa. Semakin tua udang, semakin baik kemampuan osmoregulasinya terhadap salinitas rendah.22
+
+4. Total Dissolved Solids (TDS) dan Keseimbangan Ionik: Kunci Budidaya Modern
+
+Dalam budidaya konvensional, salinitas sering dianggap sebagai parameter tunggal. Namun, dalam budidaya intensif dan salinitas rendah, Total Dissolved Solids (TDS) dan komposisi ion penyusunnya menjadi data yang jauh lebih kritikal. TDS merepresentasikan jumlah total material terlarut, termasuk mineral makro yang vital.
+
+4.1 Korelasi TDS dan Salinitas
+
+Secara umum, TDS berkorelasi linear dengan salinitas. Dalam air laut standar (35 ppt), nilai TDS sangat tinggi (~35.000 mg/L). Namun, untuk budidaya udang di air payau atau tawar, nilai TDS yang "baik" sering dikutip dalam kisaran 300 – 600 ppm (untuk sistem air tawar) hingga ribuan ppm untuk payau.7
+Penting: Nilai TDS saja tidak cukup. Air dengan TDS tinggi tetapi hanya berisi Natrium Klorida (NaCl) tidak akan mendukung kehidupan udang. Udang membutuhkan profil ion yang seimbang.
+
+4.2 Peran Vital Mineral Makro (K, Mg, Ca, Na)
+
+Data penelitian menegaskan bahwa ketidakseimbangan rasio mineral adalah penyebab utama kegagalan panen di tambak salinitas rendah, bukan sekadar rendahnya kadar garam total.4
+Kalium (Potasium, K+): Ion intraseluler utama. Kekurangan K+ menyebabkan gangguan pada pompa Na+/K+-ATPase, mengakibatkan udang lemas, nafsu makan turun, dan kematian.
+Magnesium (Mg2+): Kofaktor enzimatis vital. Kekurangan Mg2+ menghambat penyerapan Kalsium dan menyebabkan metabolisme lipid terganggu.
+Kalsium (Ca2+): Komponen utama eksoskeleton. Kekurangan Ca2+ menyebabkan kulit lunak (soft shell) pasca-molting, membuat udang rentan kanibalisme.
+Natrium (Na+): Ion ekstraseluler utama untuk regulasi volume sel.
+
+4.3 Rasio Ionik Optimal
+
+Alih-alih hanya mengejar konsentrasi absolut, budidaya modern mengacu pada Rasio Ionik yang meniru air laut. Ketidakseimbangan rasio ini menyebabkan stres osmotik yang parah.
+Tabel 2. Target Rasio Ionik untuk Budidaya Udang Vaname
+Pasangan Ion
+Rasio Molar Optimal (Referensi Air Laut)
+Dampak Ketidakseimbangan
+Na : K
+~ 28 : 1
+Rasio Na:K yang terlalu tinggi (defisiensi K) sangat mematikan. Penambahan KCl sering diperlukan di tambak inland.
+Mg : Ca
+~ 3.4 : 1 (atau ~3:1)
+Mg harus selalu lebih tinggi dari Ca. Jika Ca terlalu tinggi dibanding Mg, penyerapan Mg terganggu, menyebabkan kram otot.
+Ca : K
+~ 1 : 1
+Keseimbangan untuk fungsi saraf dan kontraksi otot.
+
+Sumber Data: 4
+
+4.4 Formulasi Perhitungan Suplementasi Mineral
+
+Untuk menghitung kebutuhan mineral di tambak (terutama salinitas rendah) agar setara dengan profil air laut, metode Boyd (2018) menggunakan faktor pengali berdasarkan salinitas aktual tambak.
+Rumus:
+
+
+$$Konsentrasi\ Target\ (mg/L) = Salinitas\ Air\ Tambak\ (ppt) \times Faktor\ Pengali$$
+Tabel 3. Faktor Pengali Mineral Boyd
+Mineral
+Faktor Pengali
+Contoh Perhitungan untuk Salinitas 5 ppt
+Kalsium (Ca)
+11,6
+$5 \times 11,6 = \mathbf{58\ mg/L}$
+Magnesium (Mg)
+39,1
+$5 \times 39,1 = \mathbf{195,5\ mg/L}$
+Kalium (K)
+10,7
+$5 \times 10,7 = \mathbf{53,5\ mg/L}$
+Natrium (Na)
+304,5
+$5 \times 304,5 = \mathbf{1522,5\ mg/L}$
+
+Tindakan Praktis: Lakukan uji laboratorium air tambak secara berkala. Jika pada salinitas 5 ppt kadar Kalium terukur hanya 20 mg/L, maka petambak harus menambahkan pupuk KCl (Kalium Klorida) untuk menutupi defisit sebesar 33,5 mg/L agar mencapai target 53,5 mg/L.21
+
+5. Kekeruhan (Turbiditas) dan Kecerahan: Bio-Optik Tambak
+
+Parameter visual air seringkali membingungkan karena adanya dua metode pengukuran: Kekeruhan (Turbiditas) dalam satuan NTU (Nephelometric Turbidity Units) dan Kecerahan (Transparency) dalam satuan cm menggunakan Secchi Disk. Keduanya memberikan informasi berbeda namun saling melengkapi.
+
+5.1 Kekeruhan (Turbidity - NTU)
+
+Kekeruhan mengukur banyaknya partikel tersuspensi yang menghamburkan cahaya. Partikel ini bisa berupa bahan organik (plankton, bakteri flok) atau anorganik (lumpur, tanah liat, pasir halus).
+Batas Aman: Studi menunjukkan bahwa untuk partikel anorganik (tanah/lumpur), ambang batas aman adalah < 30 NTU.
+Zona Bahaya: Kekeruhan anorganik > 60 NTU terbukti meningkatkan risiko kematian hingga 4 kali lipat. Partikel lumpur dapat menyumbat lamela insang, menghambat pertukaran gas, dan memicu hipoksia (kekurangan oksigen) meskipun DO air tinggi.26
+Dampak Perilaku: Kekeruhan tinggi juga mempengaruhi perilaku makan udang. Meskipun udang mengandalkan kemoreseptor (penciuman), kekeruhan ekstrem dapat mengganggu respons visual sekunder dan interaksi sosial.28
+
+5.2 Kecerahan (Brightness/Transparency)
+
+Dalam manajemen praktis, kecerahan Secchi Disk digunakan sebagai indikator densitas plankton.
+Kisaran Optimal: 30 – 40 cm (atau hingga 50 cm pada awal tebar).
+Analisis Kecerahan:
+< 20 cm: Plankton terlalu pekat (blooming). Risiko tinggi terjadinya penurunan oksigen ekstrem di malam hari dan crash plankton.
+> 50-60 cm: Air terlalu bening. Ini berbahaya karena:
+Cahaya matahari menembus sampai dasar, memicu pertumbuhan lumut dasar (lab-lab) yang jika mati akan menjadi racun.
+Udang menjadi stres karena fototaksis negatif (menghindari cahaya), enggan makan di siang hari.
+Risiko kanibalisme meningkat karena udang saling melihat dengan jelas.12
+
+5.3 Manajemen Warna Air
+
+Warna air memberikan petunjuk tentang jenis plankton dominan:
+Hijau Kecoklatan / Coklat Muda: Ideal. Menunjukkan dominasi Chlorophyta (alga hijau) dan Diatom. Stabil dan bernutrisi.
+Hijau Pekat: Dominasi Cyanobacteria (Blue-Green Algae). Berbahaya karena dapat memproduksi toksin (microcystin) dan menyebabkan rasa lumpur pada udang (off-flavor).30
+Bening: Kurang nutrisi atau populasi bakteri pengurai terlalu dominan. Perlu pemupukan atau fermentasi susulan.12
+
+6. Integrasi Data dan Interaksi Antar-Parameter
+
+Data kualitas air tidak berdiri sendiri; mereka berinteraksi membentuk matriks ekosistem yang kompleks. Memahami interaksi ini adalah kunci diagnosis masalah.
+
+6.1 Interaksi Suhu, pH, dan Amonia (TAN)
+
+Suhu air (optimal 28–32°C) dan pH secara drastis mempengaruhi toksisitas limbah nitrogen. Total Ammonia Nitrogen (TAN) terdiri dari dua bentuk:
+NH4+ (Amonium): Terionisasi, relatif tidak beracun.
+NH3 (Amonia Bebas): Gas tak terionisasi, sangat beracun (masuk ke sel & merusak jaringan).
+Hukum Kimia: Semakin tinggi pH dan Suhu, semakin banyak NH4+ yang berubah menjadi NH3 beracun.
+Pada pH 7,0 dan suhu 28°C, proporsi NH3 sangat kecil (< 1%).
+Pada pH 8,5 dan suhu 32°C, proporsi NH3 meningkat signifikan.
+Oleh karena itu, jika data TAN tinggi (misal 1-2 ppm), langkah pertama bukan panik, tetapi cek pH. Jika pH rendah (7,5), udang mungkin masih aman. Namun, jika pH tinggi (8,5), konsentrasi tersebut bisa letal.1
+
+6.2 Interaksi Kekeruhan dan Oksigen Terlarut (DO)
+
+Partikel kekeruhan (turbiditas) menghalangi penetrasi cahaya matahari ke dalam kolom air.
+Dampak: Fotosintesis oleh fitoplankton terhambat karena kurang cahaya. Akibatnya, produksi oksigen alami menurun drastis.
+Konsekuensi: Tambak yang keruh (lumpur) seringkali mengalami defisit oksigen (DO < 4 mg/L) meskipun kincir menyala, karena hilangnya kontribusi oksigen dari fotosintesis.31
+
+7. Protokol Manajemen dan Tindakan Korektif (SOP)
+
+Bagian ini menyajikan panduan praktis berdasarkan data lengkap di atas untuk operasional harian dan penanganan krisis.
+Tabel 4. Matriks Data Lengkap Kualitas Air Udang Vaname dan Protokol Korektif
+Parameter
+Satuan
+Standar Optimal (SNI/Industri)
+Ambang Batas Kritis
+Tindakan Korektif (Treatment)
+FISIKA
+
+
+
+
+
+
+
+
+Suhu
+°C
+28 – 32
+< 25 atau > 34
+Atur level air (perdalam), atur operasional kincir.
+Kecerahan
+cm
+30 – 45
+< 25 atau > 60
+<25: Ganti air, siphon, stop pupuk. >60: Fermentasi dedak/molase, pupuk susulan.
+Kekeruhan
+NTU
+< 20
+> 30 (Lumpur)
+Endapkan di tandon, perbaiki tanggul, filter inlet.
+Salinitas
+ppt
+15 – 30
+Fluktuasi > 5 ppt
+Hujan: Buang air permukaan. Kemarau: Tambah air tawar.
+TDS
+ppm
+300 – >1000
+Tergantung ion
+Koreksi mineral spesifik (K, Mg, Ca).
+KIMIA
+
+
+
+
+
+
+
+
+pH
+-
+7,5 – 8,5
+< 6,5 atau > 9,0
+Rendah: Kapur Ca(OH)2 / CaO. Tinggi: Gula/Molase, asam organik.
+Alkalinitas
+mg/L
+100 – 150
+< 80
+Aplikasi Dolomit / Sodium Bikarbonat (NaHCO3).
+Oksigen (DO)
+mg/L
+> 4,0 (Ideal > 5)
+< 3,0
+Tambah kincir, aerasi dasar (root blower), kurangi pakan.
+Amonia (NH3)
+mg/L
+< 0,1
+> 0,1 (Toksik)
+Kontrol pH (turunkan), siphon dasar, probiotik nitrifikasi.
+Nitrit (NO2)
+mg/L
+< 1,0 (Toleransi)
+> 1,0
+Jaga DO tinggi, kurangi pakan, aplikasi garam (klorida menekan toksisitas nitrit).
+H2S
+mg/L
+Nihil (< 0,001)
+Terdeteksi bau
+Siphon lumpur hitam, probiotik Thiobacillus, oksidator (hati-hati).
+BIOLOGI
+
+
+
+
+
+
+
+
+Total Vibrio
+CFU/ml
+< 10^3
+> 10^4
+Aplikasi probiotik kompetitor (Bacillus), imunostimulan.
+Plankton
+-
+Stabil (Chlorophyta)
+BGA / Dinoflagellata
+Manajemen nutrisi (N:P ratio), sirkulasi air.
+
+Sumber Data: Sintesis komprehensif dari 1
+
+7.1 Manajemen Kualitas Air Saat Hujan Lebat
+
+Hujan merupakan gangguan eksternal terbesar dalam budidaya outdoor. Air hujan bersifat tawar (menurunkan salinitas) dan asam (menurunkan pH), serta suhunya dingin.
+Dampak Stratifikasi: Air hujan yang tawar akan mengapung di atas air asin tambak. Lapisan ini menghalangi difusi oksigen dan memerangkap panas/gas di lapisan bawah.
+Protokol Penanganan:
+Drainase Atas: Buka pintu pembuangan atas (surface drainage) segera saat hujan mulai turun untuk membuang air tawar sebelum bercampur.30
+Aerasi Penuh: Nyalakan semua kincir 100% untuk mengaduk air (mixing) agar tidak terjadi pelapisan salinitas dan suhu.33
+Penyangga pH: Tabur kapur (Dolomit/CaCO3) di sekeliling tanggul dan langsung ke air untuk menetralisir keasaman air hujan.
+Puasa Udang: Hentikan pemberian pakan selama hujan deras. Suhu dingin menurunkan enzim pencernaan udang; pakan yang diberikan hanya akan membusuk dan menaikkan amonia.34
+
+7.2 Penanganan Plankton Crash (Kematian Massal Plankton)
+
+Fenomena ini terjadi ketika populasi plankton mati mendadak (biasanya setelah blooming hebat atau hujan lebat). Air berubah dari hijau pekat menjadi bening atau berbusa/keruh kotor.
+Bahaya: Bangkai plankton mengendap, membusuk, menghabiskan oksigen, dan melepaskan amonia masif. pH akan drop drastis.
+Protokol:
+Lakukan siphon dasar segera untuk menyedot bangkai plankton.
+Ganti air 20–30% untuk mengurangi beban organik.
+Aplikasi kapur untuk menaikkan pH yang jatuh.
+Aplikasi probiotik pengurai dosis tinggi dan aerasi maksimal.12
+
+8. Teknologi Pemantauan dan Masa Depan
+
+Pengumpulan data lengkap secara manual memiliki keterbatasan, terutama dalam mendeteksi fluktuasi malam hari. Integrasi teknologi sensor menjadi standar baru.
+
+8.1 Penggunaan Sensor IoT
+
+Sistem pemantauan kualitas air berbasis Internet of Things (IoT) memungkinkan pengukuran real-time untuk parameter suhu, pH, DO, dan salinitas/TDS.
+Keunggulan: Sensor dapat memberikan peringatan dini jika DO turun di bawah 4 ppm pada pukul 03.00 pagi, waktu di mana inspeksi manual jarang dilakukan. Data historis juga memungkinkan analisis tren jangka panjang.23
+Keterbatasan: Sensor memerlukan kalibrasi rutin (terutama probe pH dan DO) untuk menjaga akurasi data. Bio-fouling (lumut pada sensor) adalah masalah umum yang harus dikelola.
+
+8.2 Analisis Mineral Laboratorium
+
+Untuk budidaya intensif, disarankan memiliki akses ke pengujian mineral rutin (spektrofotometri atau titrasi) untuk memantau level K, Mg, dan Ca, terutama jika sumber air berasal dari sumur bor atau sungai dengan salinitas fluktuatif.
+
+9. Kesimpulan
+
+Data lengkap untuk budidaya udang Vaname tidak dapat disederhanakan menjadi satu set angka statis. Keberhasilan budidaya bergantung pada pemahaman holistik tentang interaksi antara parameter Fisika (Suhu, Kekeruhan, Salinitas), Kimia (pH, DO, Alkalinitas, Mineral, Nitrogen), dan Biologi (Plankton, Bakteri).
+Poin kunci untuk praktisi:
+Prioritaskan Stabilitas: pH 7,8 yang stabil jauh lebih baik daripada pH yang berayun dari 7,5 ke 9,0.
+Perhatikan Rasio Mineral: Pada salinitas rendah, pastikan rasio Na:K dan Mg:Ca seimbang sesuai profil air laut, bukan hanya mengejar TDS total.
+Waspada Kekeruhan: Jaga kekeruhan < 30 NTU dan kecerahan 30-40 cm untuk kesehatan insang dan stabilitas oksigen.
+Manajemen Krisis: Siapkan SOP yang jelas untuk penanganan hujan lebat dan plankton crash sebagai mitigasi risiko utama.
+Dengan menerapkan manajemen berbasis data yang komprehensif ini, risiko kegagalan dapat diminimalisir, dan produktivitas budidaya udang Vaname dapat dimaksimalkan secara berkelanjutan.
+Works cited
+SNI Budidaya Udang Vaname | PDF - Scribd, accessed December 1, 2025, https://id.scribd.com/document/395189654/SNI-Budidaya-Udang-Vaname
+kesesuaian kualitas air pada tambak udang vaname di pt solusi masyarakat mandiri sumbawa besar, accessed December 1, 2025, https://jurnal.umsrappang.ac.id/jikan/article/download/1912/1247/
+FAO - Penaeus vannamei - Food and Agriculture Organization of the United Nations, accessed December 1, 2025, https://www.fao.org/fishery/docs/CDrom/aquaculture/I1129m/file/en/en_whitelegshrimp.htm
+Application of Minerals in Low Saline Water Culture Systems of L. vannamei, accessed December 1, 2025, https://www.ijcmas.com/9-9-2020/T.%20Suguna.pdf
+Osmoregulation pattern and salinity tolerance of the white shrimp Litopenaeus vannamei (Boone, 1931) during post-embryonic devel - archimer – ifremer, accessed December 1, 2025, https://archimer.ifremer.fr/doc/00169/28068/26283.pdf
+(PDF) Importance of Water Quality Management in Whiteleg Shrimp ..., accessed December 1, 2025, https://www.researchgate.net/publication/355667865_Importance_of_Water_Quality_Management_in_Whiteleg_Shrimp_Penaeus_vannamei
+Berbagai Parameter Kualitas Air Tambak dan Pengaruhnya pada Udang - Minapoli, accessed December 1, 2025, https://www.minapoli.com/info/berbagai-parameter-kualitas-air-tambak-dan-pengaruhnya-pada-udang
+Kesesuaian Kualitas Air pada Tambak Udang Vannamei ..., accessed December 1, 2025, https://jurnalperikanankamasan.com/index.php/jpk/article/download/72/65/430
+THE ASSESSMENT OF WATER QUALITY PARAMETERS IN PACIFIC WHITE SHRIMP (L. VANNAMEI) CULTURE PONDS AT SELECTED VILLAGES OF KONADA AN - CIBTech, accessed December 1, 2025, https://www.cibtech.org/J-Zoology/PUBLICATIONS/2021/Vol-10/CJZ-15-Vanibala-THE-PRADESH.pdf
+The Effect of Water Quality on the Performance Growth of Vannamei Shrimp (Litopenaeus vannamei) at the Center for Brackish Aquaculture Fisheries - Journal of Marine Biotechnology and Immunology, accessed December 1, 2025, https://ejournal.immunolmarbiotech.com/index.php/JMBI/article/download/25/21/230
+Water quality impacts on health and performance of fish and shrimp, Part 2: pH, carbon dioxide, alkalinity, hardness and the water buffering system - Responsible Seafood Advocate, accessed December 1, 2025, https://www.globalseafood.org/advocate/water-quality-impacts-on-health-and-performance-of-fish-and-shrimp-part-2-ph-carbon-dioxide-alkalinity-hardness-and-the-water-buffering-system/
+5 Cara Mengatasi Air Tambak Bening agar Panen Melimpah - GDM Organik, accessed December 1, 2025, https://gdm.id/cara-mengatasi-air-tambak-bening/
+pH and Alkalinity | Mississippi State University Extension Service, accessed December 1, 2025, https://extension.msstate.edu/natural-resources/fisheries/pond-and-lake-management/pond-and-lake-water-quality/ph-and-alkalinity
+Alkalinity In Shrimp Ponds, accessed December 1, 2025, https://binhminhbba.com/en/alkalinity-in-shrimp-ponds/
+Farm Pond Management-Water Quality - Kentucky Department of Fish & Wildlife, accessed December 1, 2025, https://fw.ky.gov/Fish/Pages/Farm-Pond-Management-Water-Quality.aspx
+Example of How to Analyze Water Parameter and Shrimp Growth | JALA Blog, accessed December 1, 2025, https://jala.tech/blog/cultivation-tips/how-to-analyze-water-parameter-and-shrimp-growth
+POLA OSMOREGULASI DAN FAKTOR KONDISI UDANG VANAME (Litopenaeus vannamei) YANG - Ejournal Undip, accessed December 1, 2025, https://ejournal3.undip.ac.id/index.php/maquares/article/download/24253/21961
+Effect of gradual salinity acclimatization on survival and physiological health of Litopenaeus vannamei post larvae in freshwate - Bioflux, accessed December 1, 2025, https://bioflux.com.ro/docs/2025.444-456.pdf
+Essential factors for vannamei shrimp aquaculture - Banglele Indonesia, accessed December 1, 2025, https://banglele.co.id/index.php/article/essential-factors-for-vannamei-shrimp-aquaculture
+Effect of Low Salinity on Growth and Survival of Postlarvae and Juvenile Litopenaeus vannamei - ResearchGate, accessed December 1, 2025, https://www.researchgate.net/publication/230336626_Effect_of_Low_Salinity_on_Growth_and_Survival_of_Postlarvae_and_Juvenile_Litopenaeus_vannamei
+Revisiting ionic imbalance in low-salinity shrimp aquaculture ..., accessed December 1, 2025, https://www.globalseafood.org/advocate/revisiting-ionic-imbalance-in-low-salinity-shrimp-aquaculture/
+Low Salinity Rearing of the Pacific White Shrimp Litopenaeus vannamei : Acclimation, Survival and Growth of Postlarvae and Juveniles | 国際農研, accessed December 1, 2025, https://www.jircas.go.jp/en/publication/jarq/43/4/345
+Rancang Bangun Sistem Aerator dan Kontrol Kualitas Air untuk Budidaya Udang Vaname Berbasis Android - Repository PNJ - Politeknik Negeri Jakarta, accessed December 1, 2025, https://repository.pnj.ac.id/13727/3/Manuskrip%20Artikel%20Ilmiah.pdf
+Mineral Fortified Inland Low Saline Water for Shrimp Culture - Acta Scientific, accessed December 1, 2025, https://www.actascientific.com/ASAG/pdf/ASAG-07-1264.pdf
+Improving the osmoregulatory capacity of Pacific white shrimp grown in low salinity, accessed December 1, 2025, https://www.globalseafood.org/advocate/improving-the-osmoregulatory-capacity-of-pacific-white-shrimp-grown-in-low-salinity/
+Perancangan Sistem Kontrol Kualitas Air Pada Budidaya Udang Vaname Dengan Menggunakan Aktuator Untuk Regulasi Air dan Aerasi Udara, accessed December 1, 2025, https://e-jurnal.pnl.ac.id/semnaspnl/article/download/6757/4618
+Stress Quantification in Penaeus vannamei Exposed to Varying Levels of Turbidity, accessed December 1, 2025, https://www.researchgate.net/publication/337098550_Stress_Quantification_in_Penaeus_vannamei_Exposed_to_Varying_Levels_of_Turbidity
+Influence of turbidity on group level responses to feeding in the Pacific white shrimp (>Litopenaeus vannamei>) - The UWS Academic Portal, accessed December 1, 2025, https://research-portal.uws.ac.uk/en/publications/influence-of-turbidity-on-group-level-responses-to-feeding-in-the/
+KESESUAIAN KUALITAS AIR PADA TAMBAK UDANG VANNAMEI ..., accessed December 1, 2025, https://repository.poltekkpsidoarjo.ac.id/55/1/Kesesuaian%20Kualitas%20Air%20....pdf
+Tips Singkat Bertambak Udang di Musim Hujan | JALA Blog, accessed December 1, 2025, https://jala.tech/id/blog/tips-budidaya/tips-singkat-bertambak-udang-di-musim-hujan
+Water Quality Measurement in Aquaculture and Fish Farming - HORIBA, accessed December 1, 2025, https://static.horiba.com/fileadmin/Horiba/Water_Quality/03_Application/General/Application_Note_LAQUA_All_Industry_Aquaculture_Fishfarming_EN_52025.pdf
+Optimizing Shrimp Culture Through Environmental Monitoring: Effects of Water Quality and Metal Ion Profile on Whiteleg Shrimp (Litopenaeus vannamei) Performance in a Semi-Intensive Culture Pond - MDPI, accessed December 1, 2025, https://www.mdpi.com/2073-4441/17/19/2818
+6 Langkah Strategis Optimalkan Kualitas Air Budidaya Udang Di Musim Hujan, accessed December 1, 2025, https://fistx.co.id/id/articles/6-langkah-strategis-optimalkan-kualitas-air-budidaya-udang-di-musim-hujan
+Musim Hujan Tiba, Simak Manfaat Air Hujan untuk Tambak Udang | JALA Blog - Jala Tech, accessed December 1, 2025, https://jala.tech/id/blog/tips-budidaya/musim-hujan-tiba-simak-manfaat-air-hujan-untuk-tambak-udang
+MONITORING KUALITAS AIR TAMBAK UDANG VANAME BERBASIS INTERNET OF THINGS, accessed December 1, 2025, https://ejournal.iainata.ac.id/index.php/kabilah/article/download/291/290/844

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\FirebaseService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -25,8 +26,9 @@ class AnalyticsController extends Controller
         $sevenDaysAgo = Carbon::now()->subDays(7);
         $now = Carbon::now();
         
-        // Get historical data from Firestore
-        $historyData = $this->firebaseService->getHistoricalData($sevenDaysAgo, $now);
+        // Get historical data from Firestore (with optimized limit)
+        // Limit reduced from 1000 to 168 (1 per hour for 7 days) to save quota
+        $historyData = $this->firebaseService->getHistoricalData($sevenDaysAgo, $now, 'timestamp', 168);
         
         if (empty($historyData)) {
             return response()->json($this->generateDummyTrendData(7));
@@ -68,8 +70,9 @@ class AnalyticsController extends Controller
         $thirtyDaysAgo = Carbon::now()->subDays(30);
         $now = Carbon::now();
         
-        // Get historical data from Firestore
-        $historyData = $this->firebaseService->getHistoricalData($thirtyDaysAgo, $now);
+        // Get historical data from Firestore (optimized limit)
+        // For 30 days: 1 record per 4 hours = 180 records total
+        $historyData = $this->firebaseService->getHistoricalData($thirtyDaysAgo, $now, 'timestamp', 180);
         
         if (empty($historyData)) {
             return response()->json($this->generateDummyTrendData(30));
@@ -108,14 +111,55 @@ class AnalyticsController extends Controller
      */
     public function getCorrelation()
     {
-        $twentyFourHoursAgo = Carbon::now()->subHours(24);
-        $now = Carbon::now();
-        
-        // Get historical data from Firestore
-        $historyData = $this->firebaseService->getHistoricalData($twentyFourHoursAgo, $now);
+        try {
+            $twentyFourHoursAgo = Carbon::now()->subHours(24);
+            $now = Carbon::now();
+            
+            // Get historical data from Firestore
+            $historyData = $this->firebaseService->getHistoricalData($twentyFourHoursAgo, $now);
 
-        // Generate dummy data if not enough data
-        if (count($historyData) < 10) {
+            // Generate dummy data if not enough data
+            if (empty($historyData) || count($historyData) < 10) {
+                return response()->json([
+                    'pH_TDS' => 0.45,
+                    'TDS_Turbidity' => 0.71,
+                    'pH_Turbidity' => -0.12,
+                    'Salinity_TDS' => 0.90,
+                    'pH_Salinity' => 0.35,
+                    'Turbidity_Salinity' => 0.58,
+                ]);
+            }
+
+            $data = collect($historyData);
+            $pH = $data->pluck('ph_value')->filter()->values()->toArray();
+            $tds = $data->pluck('tds_value')->filter()->values()->toArray();
+            $turbidity = $data->pluck('turbidity')->filter()->values()->toArray();
+            $salinity = $data->pluck('salinity_ppt')->filter()->values()->toArray();
+
+            // Check if we have enough data points
+            if (count($pH) < 5 || count($tds) < 5 || count($turbidity) < 5) {
+                return response()->json([
+                    'pH_TDS' => 0.45,
+                    'TDS_Turbidity' => 0.71,
+                    'pH_Turbidity' => -0.12,
+                    'Salinity_TDS' => 0.90,
+                    'pH_Salinity' => 0.35,
+                    'Turbidity_Salinity' => 0.58,
+                ]);
+            }
+
+            return response()->json([
+                'pH_TDS' => round($this->calculatePearsonCorrelation($pH, $tds), 2),
+                'TDS_Turbidity' => round($this->calculatePearsonCorrelation($tds, $turbidity), 2),
+                'pH_Turbidity' => round($this->calculatePearsonCorrelation($pH, $turbidity), 2),
+                'Salinity_TDS' => round($this->calculatePearsonCorrelation($salinity, $tds), 2),
+                'pH_Salinity' => round($this->calculatePearsonCorrelation($pH, $salinity), 2),
+                'Turbidity_Salinity' => round($this->calculatePearsonCorrelation($turbidity, $salinity), 2),
+            ]);
+        } catch (\Exception $e) {
+            // Log error and return dummy data
+            Log::error('Correlation calculation error: ' . $e->getMessage());
+            
             return response()->json([
                 'pH_TDS' => 0.45,
                 'TDS_Turbidity' => 0.71,
@@ -125,21 +169,6 @@ class AnalyticsController extends Controller
                 'Turbidity_Salinity' => 0.58,
             ]);
         }
-
-        $data = collect($historyData);
-        $pH = $data->pluck('ph_value')->toArray();
-        $tds = $data->pluck('tds_value')->toArray();
-        $turbidity = $data->pluck('turbidity')->toArray();
-        $salinity = $data->pluck('salinity_ppt')->toArray();
-
-        return response()->json([
-            'pH_TDS' => round($this->calculatePearsonCorrelation($pH, $tds), 2),
-            'TDS_Turbidity' => round($this->calculatePearsonCorrelation($tds, $turbidity), 2),
-            'pH_Turbidity' => round($this->calculatePearsonCorrelation($pH, $turbidity), 2),
-            'Salinity_TDS' => round($this->calculatePearsonCorrelation($salinity, $tds), 2),
-            'pH_Salinity' => round($this->calculatePearsonCorrelation($pH, $salinity), 2),
-            'Turbidity_Salinity' => round($this->calculatePearsonCorrelation($turbidity, $salinity), 2),
-        ]);
     }
 
     /**

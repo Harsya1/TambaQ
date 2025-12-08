@@ -18,26 +18,33 @@ Route::post('/forgot-password', [AuthController::class, 'verifyResetPassword'])-
 Route::get('/reset-password', [AuthController::class, 'showResetPasswordForm'])->name('password.reset.form');
 Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.reset');
 
+// API Routes (no auth required for real-time monitoring)
+Route::prefix('api')->group(function () {
+    // Sensor API Routes
+    Route::get('/sensor/latest', [DashboardController::class, 'getLatestSensorData'])->name('api.sensor.latest');
+    Route::get('/sensor/chart', [DashboardController::class, 'getChartData'])->name('api.sensor.chart');
+    Route::get('/sensor/status', [DashboardController::class, 'getSensorStatus'])->name('api.sensor.status');
+    
+    // History API Routes
+    Route::get('/history-stats', [DashboardController::class, 'getHistoryStats'])->name('api.history.stats');
+    Route::get('/history/data', [DashboardController::class, 'getHistoryData'])->name('api.history.data');
+    Route::get('/alerts-frequency/7days', [DashboardController::class, 'getAlertsFrequency'])->name('api.alerts.frequency');
+    Route::get('/response-time/24hours', [DashboardController::class, 'getResponseTime24Hours'])->name('api.response.time.24hours');
+    
+    // Analytics API Routes
+    Route::get('/trend/7days', [AnalyticsController::class, 'getTrend7Days'])->name('api.trend.7days');
+    Route::get('/trend/30days', [AnalyticsController::class, 'getTrend30Days'])->name('api.trend.30days');
+    Route::get('/correlation', [AnalyticsController::class, 'getCorrelation'])->name('api.correlation');
+    Route::get('/forecast', [AnalyticsController::class, 'getForecast'])->name('api.forecast');
+    
+    // Export Routes
+    Route::get('/export/csv', [AnalyticsController::class, 'exportCsv'])->name('api.export.csv');
+    Route::get('/export/pdf', [AnalyticsController::class, 'exportPdf'])->name('api.export.pdf');
+});
+
 // Protected Routes (require authentication)
 Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::get('/history', [DashboardController::class, 'history'])->name('history');
-    
-    // API Routes untuk real-time data
-    Route::get('/api/sensor/latest', [DashboardController::class, 'getLatestSensorData'])->name('api.sensor.latest');
-    Route::get('/api/sensor/chart', [DashboardController::class, 'getChartData'])->name('api.sensor.chart');
-    Route::get('/api/sensor/status', [DashboardController::class, 'getSensorStatus'])->name('api.sensor.status');
-    Route::get('/api/history-stats', [DashboardController::class, 'getHistoryStats'])->name('api.history.stats');
-    Route::get('/api/history/data', [DashboardController::class, 'getHistoryData'])->name('api.history.data');
-    Route::get('/api/alerts-frequency/7days', [DashboardController::class, 'getAlertsFrequency'])->name('api.alerts.frequency');
-    Route::get('/api/response-time/24hours', [DashboardController::class, 'getResponseTime24Hours'])->name('api.response.time.24hours');
-    
-    // Analytics API Routes
-    Route::get('/api/trend/7days', [AnalyticsController::class, 'getTrend7Days'])->name('api.trend.7days');
-    Route::get('/api/trend/30days', [AnalyticsController::class, 'getTrend30Days'])->name('api.trend.30days');
-    Route::get('/api/correlation', [AnalyticsController::class, 'getCorrelation'])->name('api.correlation');
-    Route::get('/api/forecast', [AnalyticsController::class, 'getForecast'])->name('api.forecast');
-    Route::get('/api/export/csv', [AnalyticsController::class, 'exportCsv'])->name('api.export.csv');
-    Route::get('/api/export/pdf', [AnalyticsController::class, 'exportPdf'])->name('api.export.pdf');
 });

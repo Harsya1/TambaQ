@@ -6,16 +6,22 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\FuzzyMamdaniService;
 use App\Services\FirebaseService;
+use App\Services\TelegramService;
 
 class DashboardController extends Controller
 {
     protected $fuzzyService;
     protected $firebaseService;
+    protected $telegramService;
 
-    public function __construct(FuzzyMamdaniService $fuzzyService, FirebaseService $firebaseService)
-    {
+    public function __construct(
+        FuzzyMamdaniService $fuzzyService, 
+        FirebaseService $firebaseService,
+        TelegramService $telegramService
+    ) {
         $this->fuzzyService = $fuzzyService;
         $this->firebaseService = $firebaseService;
+        $this->telegramService = $telegramService;
     }
 
     public function index()
@@ -73,6 +79,10 @@ class DashboardController extends Controller
         // Simpan hasil ke Firestore
         $this->firebaseService->saveFuzzyDecision($sensorData, $fuzzyResult);
 
+        // === TELEGRAM ALERT INTEGRATION ===
+        // Kirim notifikasi jika kondisi tidak normal (Critical atau Poor)
+        $this->checkAndSendTelegramAlert($sensorData, $fuzzyResult);
+
         // Return fuzzy decision data
         return [
             'water_quality_status' => $fuzzyResult['water_quality_status'],
@@ -86,17 +96,119 @@ class DashboardController extends Controller
     }
 
     /**
+     * Cek kondisi air dan kirim Telegram alert jika abnormal
+     * 
+     * @param array $sensorData Data sensor saat ini
+     * @param array $fuzzyResult Hasil evaluasi fuzzy logic
+     * @return void
+     */
+    private function checkAndSendTelegramAlert(array $sensorData, array $fuzzyResult): void
+    {
+        // Skip jika Telegram belum dikonfigurasi
+        if (!$this->telegramService->isConfigured()) {
+            return;
+        }
+
+        $score = (float) ($fuzzyResult['water_quality_score'] ?? 0);
+        $category = $fuzzyResult['category'] ?? 'Unknown';
+        
+        // Kirim alert jika kondisi Critical atau Poor (score < 45)
+        if ($score < 45) {
+            // Rate limiting: cegah spam dengan cache key berdasarkan kategori
+            $alertKey = "water_quality_{$category}";
+            
+            if ($this->telegramService->canSendAlert($alertKey)) {
+                $this->telegramService->sendAlert(
+                    (float) ($sensorData['ph_value'] ?? 0),
+                    (float) ($sensorData['turbidity'] ?? 0),
+                    (float) ($sensorData['salinity_ppt'] ?? 0),
+                    $category,
+                    $score
+                );
+            }
+        }
+        
+        // Alert spesifik untuk parameter individual yang kritis
+        $this->checkParameterAlerts($sensorData);
+    }
+
+    /**
+     * Cek alert untuk parameter individual
+     * Mengirim satu notifikasi gabungan jika ada parameter yang kritis
+     * 
+     * @param array $sensorData
+     * @return void
+     */
+    private function checkParameterAlerts(array $sensorData): void
+    {
+        $alerts = [];
+        
+        // Cek pH (normal: 6.5 - 8.5)
+        $ph = $sensorData['ph_value'] ?? 0;
+        if ($ph < 6.5 || $ph > 8.5) {
+            $alerts['ph'] = [
+                'value' => $ph,
+                'status' => $ph > 8.5 ? 'TERLALU TINGGI' : 'TERLALU RENDAH',
+                'normal' => '6.5 - 8.5'
+            ];
+        }
+
+        // Cek Turbidity (normal: 20 - 45 NTU)
+        $turbidity = $sensorData['turbidity'] ?? 0;
+        if ($turbidity < 20 || $turbidity > 45) {
+            $alerts['turbidity'] = [
+                'value' => $turbidity,
+                'status' => $turbidity > 45 ? 'TERLALU TINGGI' : 'TERLALU RENDAH',
+                'normal' => '20 - 45 NTU'
+            ];
+        }
+
+        // Cek Salinitas (normal: 10 - 25 ppt)
+        $salinity = $sensorData['salinity_ppt'] ?? 0;
+        if ($salinity < 10 || $salinity > 25) {
+            $alerts['salinity'] = [
+                'value' => $salinity,
+                'status' => $salinity > 25 ? 'TERLALU TINGGI' : 'TERLALU RENDAH',
+                'normal' => '10 - 25 ppt'
+            ];
+        }
+
+        // Kirim satu notifikasi gabungan jika ada alert
+        if (!empty($alerts)) {
+            $alertKey = 'combined_params_' . implode('_', array_keys($alerts));
+            if ($this->telegramService->canSendAlert($alertKey)) {
+                $this->telegramService->sendCombinedAlert($ph, $turbidity, $salinity, $alerts);
+            }
+        }
+    }
+
+    /**
      * API endpoint untuk mendapatkan data sensor terbaru
      */
     public function getLatestSensorData()
     {
-        // Ambil data real-time dari Firestore
+        // Ambil data real-time dari Firestore (with caching and fallback)
         $sensorData = $this->firebaseService->getLatestSensorData();
         
         if (!$sensorData) {
+            // Last resort: return mock data dengan pesan informatif
             return response()->json([
-                'error' => 'No sensor data available'
-            ], 404);
+                'sensor' => (object) [
+                    'ph_value' => 0,
+                    'tds_value' => 0,
+                    'turbidity' => 0,
+                    'water_level' => 0,
+                    'salinity_ppt' => 0,
+                    'water_quality_score' => 0
+                ],
+                'fuzzyDecision' => (object) [
+                    'water_quality_score' => 0,
+                    'water_quality_status' => 'No Data Available',
+                    'recommendation' => 'System sedang mengalami keterbatasan akses Firebase. Data akan kembali tersedia setelah quota reset atau cache diperbarui.'
+                ],
+                'message' => 'Firebase quota exceeded - cached data unavailable',
+                'status' => 'quota_exceeded'
+            ], 200);
         }
         
         // Proses fuzzy logic
@@ -107,6 +219,7 @@ class DashboardController extends Controller
                 'water_quality_score' => $fuzzyDecision['water_quality_score'] ?? 0
             ]),
             'fuzzyDecision' => (object) $fuzzyDecision,
+            'status' => 'ok'
         ]);
     }
 
