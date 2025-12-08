@@ -294,6 +294,137 @@ routes/web.php                            # Route definitions
 
 ---
 
+## 📝 STUDI CASE: Validasi Password Register
+
+### Lokasi File
+```
+app/Http/Controllers/AuthController.php
+```
+
+### Requirement
+Password harus memenuhi kriteria berikut:
+- ✅ Minimal 8 karakter
+- ✅ Mengandung huruf **KAPITAL** (A-Z)
+- ✅ Mengandung huruf **kecil** (a-z)
+- ✅ Mengandung **angka** (0-9)
+- ✅ Mengandung **simbol** (@$!%*?&#)
+
+### Contoh Password Valid
+| Password | Valid | Alasan |
+|----------|-------|--------|
+| `Password123!` | ✅ | Ada kapital, kecil, angka, simbol |
+| `Tambaq@2025` | ✅ | Ada kapital, kecil, angka, simbol |
+| `password123` | ❌ | Tidak ada kapital dan simbol |
+| `PASSWORD123` | ❌ | Tidak ada huruf kecil dan simbol |
+| `Pass123` | ❌ | Kurang dari 8 karakter, tidak ada simbol |
+
+### Implementasi Kode
+
+#### Cari fungsi register() di AuthController.php (baris ~50-75)
+
+**Kode Validasi Password dengan Regex:**
+```php
+public function register(Request $request)
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|string|email|max:255|unique:users',
+        'phone_number' => 'required|string|max:20',
+        'password' => [
+            'required',
+            'string',
+            'min:8',
+            'confirmed',
+            'regex:/[A-Z]/',      // Harus ada huruf kapital
+            'regex:/[a-z]/',      // Harus ada huruf kecil
+            'regex:/[0-9]/',      // Harus ada angka
+            'regex:/[@$!%*?&#]/', // Harus ada simbol
+        ],
+    ], [
+        'password.confirmed' => 'Konfirmasi password harus sama dengan password.',
+        'email.unique' => 'Email sudah terdaftar.',
+        'password.min' => 'Password minimal 8 karakter.',
+        'password.regex' => 'Password harus mengandung huruf kapital, huruf kecil, angka, dan simbol (@$!%*?&#).',
+    ]);
+    
+    // ... rest of the code
+}
+```
+
+### Penjelasan Regex
+
+| Regex | Arti |
+|-------|------|
+| `regex:/[A-Z]/` | Harus mengandung minimal 1 huruf kapital (A-Z) |
+| `regex:/[a-z]/` | Harus mengandung minimal 1 huruf kecil (a-z) |
+| `regex:/[0-9]/` | Harus mengandung minimal 1 angka (0-9) |
+| `regex:/[@$!%*?&#]/` | Harus mengandung minimal 1 simbol dari daftar |
+
+### Studi Case: Modifikasi Validasi
+
+#### Case 1: Tambah Simbol yang Diizinkan
+**Sebelum:**
+```php
+'regex:/[@$!%*?&#]/', // Simbol terbatas
+```
+
+**Sesudah (Tambah simbol -, _, .):**
+```php
+'regex:/[@$!%*?&#\-_.]/', // Simbol lebih lengkap
+```
+
+#### Case 2: Ubah Minimal Karakter
+**Sebelum:**
+```php
+'min:8',
+```
+
+**Sesudah (Minimal 10 karakter):**
+```php
+'min:10',
+```
+
+#### Case 3: Hapus Requirement Simbol (Jika tidak perlu)
+**Sebelum:**
+```php
+'password' => [
+    'required',
+    'string',
+    'min:8',
+    'confirmed',
+    'regex:/[A-Z]/',
+    'regex:/[a-z]/',
+    'regex:/[0-9]/',
+    'regex:/[@$!%*?&#]/', // Hapus baris ini
+],
+```
+
+**Sesudah (Tanpa simbol):**
+```php
+'password' => [
+    'required',
+    'string',
+    'min:8',
+    'confirmed',
+    'regex:/[A-Z]/',
+    'regex:/[a-z]/',
+    'regex:/[0-9]/',
+    // Simbol tidak wajib
+],
+```
+
+### Testing Validasi
+
+1. Akses `http://localhost:8000/register`
+2. Isi form dengan password yang **tidak valid**: `password123`
+3. Klik **Register**
+4. Akan muncul error: *"Password harus mengandung huruf kapital, huruf kecil, angka, dan simbol"*
+5. Ubah password menjadi **valid**: `Password123!`
+6. Klik **Register** lagi
+7. Registrasi berhasil ✅
+
+---
+
 ## 4️⃣ DATA HISTORI
 
 ### URL Akses
