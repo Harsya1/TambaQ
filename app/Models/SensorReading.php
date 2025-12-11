@@ -10,8 +10,6 @@ class SensorReading extends Model
         'ph_value',
         'water_level',
         'tds_value',
-        'salinity',
-        'salinity_ppt',
         'turbidity',
         'water_quality_score',
     ];
@@ -20,8 +18,6 @@ class SensorReading extends Model
         'ph_value' => 'decimal:2',
         'water_level' => 'decimal:2',
         'tds_value' => 'decimal:2',
-        'salinity' => 'decimal:2',
-        'salinity_ppt' => 'decimal:2',
         'turbidity' => 'decimal:2',
         'water_quality_score' => 'decimal:2',
     ];

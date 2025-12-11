@@ -758,12 +758,6 @@
                 </div>
 
                 <div class="sensor-box">
-                    <div class="sensor-label">Salinitas</div>
-                    <div class="sensor-value" id="salinity">{{ $sensorData->salinity ?? '-' }}</div>
-                    <div class="sensor-unit">ppt</div>
-                </div>
-
-                <div class="sensor-box">
                     <div class="sensor-label">Kekeruhan</div>
                     <div class="sensor-value" id="turbidity">{{ $sensorData->turbidity ?? '-' }}</div>
                     <div class="sensor-unit">NTU</div>
@@ -980,7 +974,6 @@
                     document.getElementById('ph-value').textContent = data.sensor.ph_value || '-';
                     document.getElementById('water-level').textContent = data.sensor.water_level || '-';
                     document.getElementById('tds-value').textContent = data.sensor.tds_value || '-';
-                    document.getElementById('salinity').textContent = data.sensor.salinity || '-';
                     document.getElementById('turbidity').textContent = data.sensor.turbidity || '-';
                 }
 
@@ -1092,13 +1085,6 @@
                                 data: data.tdsData,
                                 borderColor: '#f093fb',
                                 backgroundColor: 'rgba(240, 147, 251, 0.1)',
-                                tension: 0.4
-                            },
-                            {
-                                label: 'Salinitas (ppt)',
-                                data: data.salinityData,
-                                borderColor: '#43e97b',
-                                backgroundColor: 'rgba(67, 233, 123, 0.1)',
                                 tension: 0.4
                             },
                             {
@@ -1305,8 +1291,7 @@
             let data = {
                 'pH_TDS': 0.45,
                 'TDS_Turbidity': 0.71,
-                'pH_Turbidity': -0.12,
-                'Salinity_TDS': 0.90
+                'pH_Turbidity': -0.12
             };
             
             try {
@@ -1337,8 +1322,7 @@
             const correlations = [
                 { label: 'pH - TDS', value: data.pH_TDS ?? 0.45 },
                 { label: 'TDS - Turbidity', value: data.TDS_Turbidity ?? 0.71 },
-                { label: 'pH - Turbidity', value: data.pH_Turbidity ?? -0.12 },
-                { label: 'Salinity - TDS', value: data.Salinity_TDS ?? 0.90 }
+                { label: 'pH - Turbidity', value: data.pH_Turbidity ?? -0.12 }
             ];
             
             correlations.forEach(corr => {
@@ -1385,8 +1369,7 @@
                 const forecasts = [
                     { sensor: 'pH', value: data.pH_next3h, unit: 'pH' },
                     { sensor: 'TDS', value: data.TDS_next3h, unit: 'ppm' },
-                    { sensor: 'Turbidity', value: data.turbidity_next3h, unit: 'NTU' },
-                    { sensor: 'Salinity', value: data.salinity_next3h, unit: 'ppt' }
+                    { sensor: 'Turbidity', value: data.turbidity_next3h, unit: 'NTU' }
                 ];
                 
                 forecasts.forEach(forecast => {

@@ -54,26 +54,9 @@ class TestFirebaseConnection extends Command
                     ['TDS Value', number_format($sensorData['tds_value'], 2), 'PPM'],
                     ['Turbidity', number_format($sensorData['turbidity'], 2), 'NTU'],
                     ['Water Level', number_format($sensorData['water_level'], 2), 'cm'],
-                    ['Salinity (converted)', number_format($sensorData['salinity_ppt'], 2), 'PPT'],
                     ['Timestamp', $sensorData['timestamp'], ''],
                 ]
             );
-
-            $this->newLine();
-
-            // Test 2: Verify TDS to Salinity conversion
-            $this->info('🔬 Verifying TDS → Salinity Conversion...');
-            $expectedSalinity = $sensorData['tds_value'] / (0.57 * 1000);
-            $actualSalinity = $sensorData['salinity_ppt'];
-            
-            $this->line("TDS: {$sensorData['tds_value']} PPM → Salinity: {$actualSalinity} PPT");
-            $this->line("Expected: " . round($expectedSalinity, 2) . " PPT");
-            
-            if (abs($expectedSalinity - $actualSalinity) < 0.01) {
-                $this->info('✅ Conversion formula correct!');
-            } else {
-                $this->warn('⚠️  Conversion mismatch detected');
-            }
 
             $this->newLine();
             $this->info('🎉 Firebase connection test completed successfully!');

@@ -106,12 +106,11 @@ class TelegramService
 
     /**
      * Kirim notifikasi alert bahaya ke grup teknisi
-     * Format pesan sudah disesuaikan dengan emoji dan formatting HTML
-     * Mengirim data pH, Turbidity, dan Salinitas dalam satu pesan
+     * Format pesan profesional tanpa emoji untuk enterprise-grade appearance
      * 
      * @param float $ph Nilai pH air
+     * @param float $tds Nilai TDS (ppm)
      * @param float $turbidity Nilai kekeruhan (NTU)
-     * @param float $salinity Nilai salinitas (ppt)
      * @param string $status Status kualitas air (Critical/Poor/Fair/Good/Excellent)
      * @param float $score Skor kualitas air (0-100)
      * @param string|null $chatId Chat ID tujuan (optional)
@@ -119,51 +118,47 @@ class TelegramService
      */
     public function sendAlert(
         float $ph, 
+        float $tds,
         float $turbidity, 
-        float $salinity,
         string $status,
         float $score,
         ?string $chatId = null
     ): array {
-        // Tentukan emoji berdasarkan status
-        $statusEmoji = match($status) {
-            'Critical' => '🚨',
-            'Poor' => '⚠️',
-            'Fair' => '📊',
-            'Good' => '✅',
-            'Excellent' => '🌟',
-            default => '📋'
-        };
-
-        // Tentukan emoji untuk setiap parameter (merah jika di luar range normal)
-        $phEmoji = ($ph < 6.5 || $ph > 8.5) ? '🔴' : '🟢';
-        $turbidityEmoji = ($turbidity > 45) ? '🔴' : '🟢';
-        $salinityEmoji = ($salinity < 10 || $salinity > 25) ? '🔴' : '🟢';
-
-        // Format pesan dengan HTML
         $timestamp = $this->formatTimestamp();
-        $message = "{$statusEmoji} <b>ALERT KUALITAS AIR TAMBAK</b> {$statusEmoji}\n\n";
-        $message .= "📍 <b>Status:</b> {$status}\n";
-        $message .= "📈 <b>Skor:</b> {$score}/100\n\n";
-        $message .= "━━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "📊 <b>DATA SENSOR REALTIME</b>\n";
-        $message .= "━━━━━━━━━━━━━━━━━━━━━\n\n";
-        $message .= "{$phEmoji} <b>pH Air:</b> {$ph}\n";
-        $message .= "   └ Normal: 6.5 - 8.5\n\n";
-        $message .= "{$turbidityEmoji} <b>Kekeruhan:</b> {$turbidity} NTU\n";
-        $message .= "   └ Normal: < 45 NTU\n\n";
-        $message .= "{$salinityEmoji} <b>Salinitas:</b> {$salinity} ppt\n";
-        $message .= "   └ Normal: 10 - 25 ppt\n\n";
-        $message .= "━━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "⏰ <b>Waktu:</b> {$timestamp}\n";
-        $message .= "🔗 <b>Dashboard:</b> <a href=\"https://tambaq.temandev.com/dashboard\">Buka Dashboard</a>";
+        $reportId = strtoupper(substr(md5($timestamp . $score), 0, 8));
+        
+        // Determine parameter status flags
+        $phFlag = ($ph < 6.5 || $ph > 8.5) ? '[ABNORMAL]' : '[OK]';
+        $tdsFlag = ($tds < 300 || $tds > 800) ? '[ABNORMAL]' : '[OK]';
+        $turbidityFlag = ($turbidity > 45) ? '[ABNORMAL]' : '[OK]';
+
+        // Professional format message
+        $message = "<b>[SYSTEM ALERT - TAMBAQ WATER QUALITY]</b>\n";
+        $message .= "----------------------------------------\n\n";
+        $message .= "<b>REPORT ID:</b> #{$reportId}\n";
+        $message .= "<b>TIMESTAMP:</b> {$timestamp}\n";
+        $message .= "<b>STATUS:</b> {$status}\n";
+        $message .= "<b>SCORE:</b> {$score}/100\n\n";
+        $message .= "----------------------------------------\n";
+        $message .= "<b>SENSOR READINGS</b>\n";
+        $message .= "----------------------------------------\n\n";
+        $message .= "<b>pH Level:</b> {$ph} {$phFlag}\n";
+        $message .= "  - Normal Range: 6.5 - 8.5\n\n";
+        $message .= "<b>TDS:</b> {$tds} ppm {$tdsFlag}\n";
+        $message .= "  - Normal Range: 300 - 800 ppm\n\n";
+        $message .= "<b>Turbidity:</b> {$turbidity} NTU {$turbidityFlag}\n";
+        $message .= "  - Normal Range: 20 - 45 NTU\n\n";
+        $message .= "----------------------------------------\n";
+        $message .= "<b>ACTION REQUIRED:</b> Please check pond conditions immediately.\n";
+        $message .= "<b>DASHBOARD:</b> https://tambaq.temandev.com/dashboard\n";
+        $message .= "----------------------------------------";
 
         return $this->sendMessage($message, $chatId);
     }
 
     /**
      * Kirim notifikasi alert cepat (simplified version)
-     * Untuk kasus urgent yang butuh respon cepat
+     * Format profesional untuk enterprise-grade appearance
      * 
      * @param string $alertType Tipe alert (pH, TDS, Turbidity, dll)
      * @param float $currentValue Nilai saat ini
@@ -180,74 +175,91 @@ class TelegramService
         ?string $chatId = null
     ): array {
         $isAboveMax = $currentValue > $normalMax;
-        $statusText = $isAboveMax ? 'TERLALU TINGGI' : 'TERLALU RENDAH';
+        $statusText = $isAboveMax ? 'ABOVE THRESHOLD' : 'BELOW THRESHOLD';
         $timestamp = $this->formatTimestamp();
+        $reportId = strtoupper(substr(md5($timestamp . $currentValue), 0, 8));
         
-        $message = "🚨 <b>PERINGATAN {$alertType}!</b>\n\n";
-        $message .= "⚠️ Nilai {$alertType}: <b>{$currentValue}</b>\n";
-        $message .= "📊 Status: <code>{$statusText}</code>\n";
-        $message .= "✅ Range Normal: {$normalMin} - {$normalMax}\n\n";
-        $message .= "⏰ {$timestamp}\n\n";
-        $message .= "Segera periksa kondisi tambak!";
+        $message = "<b>[QUICK ALERT - TAMBAQ MONITORING]</b>\n";
+        $message .= "----------------------------------------\n\n";
+        $message .= "<b>REPORT ID:</b> #{$reportId}\n";
+        $message .= "<b>TIMESTAMP:</b> {$timestamp}\n";
+        $message .= "<b>PARAMETER:</b> {$alertType}\n";
+        $message .= "<b>STATUS:</b> {$statusText}\n\n";
+        $message .= "----------------------------------------\n";
+        $message .= "<b>READING DETAILS</b>\n";
+        $message .= "----------------------------------------\n\n";
+        $message .= "<b>Current Value:</b> {$currentValue}\n";
+        $message .= "<b>Normal Range:</b> {$normalMin} - {$normalMax}\n\n";
+        $message .= "----------------------------------------\n";
+        $message .= "<b>ACTION REQUIRED:</b> Immediate inspection recommended.\n";
+        $message .= "----------------------------------------";
 
         return $this->sendMessage($message, $chatId);
     }
 
     /**
-     * Kirim notifikasi gabungan untuk pH, Turbidity, dan Salinitas
-     * Satu pesan untuk semua parameter yang bermasalah
+     * Kirim notifikasi gabungan untuk pH, TDS, dan Turbidity
+     * Format profesional tanpa emoji untuk enterprise-grade appearance
      * 
      * @param float $ph Nilai pH
+     * @param float $tds Nilai TDS (ppm)
      * @param float $turbidity Nilai kekeruhan (NTU)
-     * @param float $salinity Nilai salinitas (ppt)
      * @param array $alerts Array berisi parameter yang bermasalah
      * @param string|null $chatId Chat ID tujuan
      * @return array Response dari Telegram API
      */
     public function sendCombinedAlert(
         float $ph,
+        float $tds,
         float $turbidity,
-        float $salinity,
         array $alerts,
         ?string $chatId = null
     ): array {
         $timestamp = $this->formatTimestamp();
         $alertCount = count($alerts);
+        $reportId = strtoupper(substr(md5($timestamp . $alertCount), 0, 8));
         
-        $message = "🚨 <b>PERINGATAN KUALITAS AIR!</b> 🚨\n\n";
-        $message .= "⚠️ Terdeteksi <b>{$alertCount} parameter</b> di luar batas normal\n\n";
-        $message .= "━━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "📊 <b>DATA SENSOR</b>\n";
-        $message .= "━━━━━━━━━━━━━━━━━━━━━\n\n";
+        // Determine parameter status flags
+        $phFlag = isset($alerts['ph']) ? '[ABNORMAL]' : '[OK]';
+        $tdsFlag = isset($alerts['tds']) ? '[ABNORMAL]' : '[OK]';
+        $turbFlag = isset($alerts['turbidity']) ? '[ABNORMAL]' : '[OK]';
         
-        // pH
-        $phEmoji = isset($alerts['ph']) ? '🔴' : '🟢';
-        $phStatus = isset($alerts['ph']) ? " ⚠️ <code>{$alerts['ph']['status']}</code>" : '';
-        $message .= "{$phEmoji} <b>pH Air:</b> {$ph}{$phStatus}\n";
-        $message .= "   └ Normal: 6.5 - 8.5\n\n";
-        
-        // Turbidity
-        $turbEmoji = isset($alerts['turbidity']) ? '🔴' : '🟢';
-        $turbStatus = isset($alerts['turbidity']) ? " ⚠️ <code>{$alerts['turbidity']['status']}</code>" : '';
-        $message .= "{$turbEmoji} <b>Kekeruhan:</b> {$turbidity} NTU{$turbStatus}\n";
-        $message .= "   └ Normal: 20 - 45 NTU\n\n";
-        
-        // Salinitas
-        $salEmoji = isset($alerts['salinity']) ? '🔴' : '🟢';
-        $salStatus = isset($alerts['salinity']) ? " ⚠️ <code>{$alerts['salinity']['status']}</code>" : '';
-        $message .= "{$salEmoji} <b>Salinitas:</b> {$salinity} ppt{$salStatus}\n";
-        $message .= "   └ Normal: 10 - 25 ppt\n\n";
-        
-        $message .= "━━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "⏰ <b>Waktu:</b> {$timestamp}\n\n";
-        $message .= "🔔 Segera periksa kondisi tambak!";
+        $message = "<b>[COMBINED ALERT - TAMBAQ WATER QUALITY]</b>\n";
+        $message .= "----------------------------------------\n\n";
+        $message .= "<b>REPORT ID:</b> #{$reportId}\n";
+        $message .= "<b>TIMESTAMP:</b> {$timestamp}\n";
+        $message .= "<b>ABNORMAL PARAMETERS:</b> {$alertCount}\n\n";
+        $message .= "----------------------------------------\n";
+        $message .= "<b>SENSOR READINGS</b>\n";
+        $message .= "----------------------------------------\n\n";
+        $message .= "<b>pH Level:</b> {$ph} {$phFlag}\n";
+        $message .= "  - Normal Range: 6.5 - 8.5\n";
+        if (isset($alerts['ph'])) {
+            $message .= "  - Status: {$alerts['ph']['status']}\n";
+        }
+        $message .= "\n";
+        $message .= "<b>TDS:</b> {$tds} ppm {$tdsFlag}\n";
+        $message .= "  - Normal Range: 300 - 800 ppm\n";
+        if (isset($alerts['tds'])) {
+            $message .= "  - Status: {$alerts['tds']['status']}\n";
+        }
+        $message .= "\n";
+        $message .= "<b>Turbidity:</b> {$turbidity} NTU {$turbFlag}\n";
+        $message .= "  - Normal Range: 20 - 45 NTU\n";
+        if (isset($alerts['turbidity'])) {
+            $message .= "  - Status: {$alerts['turbidity']['status']}\n";
+        }
+        $message .= "\n";
+        $message .= "----------------------------------------\n";
+        $message .= "<b>ACTION REQUIRED:</b> Immediate inspection recommended.\n";
+        $message .= "----------------------------------------";
 
         return $this->sendMessage($message, $chatId);
     }
 
     /**
      * Kirim laporan harian kualitas air
-     * Menampilkan data pH, Turbidity, dan Salinitas
+     * Format profesional tanpa emoji untuk enterprise-grade appearance
      * 
      * @param array $dailyStats Statistik harian (avg, min, max, count)
      * @param string|null $chatId Chat ID tujuan
@@ -256,27 +268,31 @@ class TelegramService
     public function sendDailyReport(array $dailyStats, ?string $chatId = null): array
     {
         $date = now()->format('d M Y');
+        $reportId = strtoupper(substr(md5($date), 0, 8));
         
-        $message = "📊 <b>LAPORAN HARIAN TAMBAK</b>\n";
-        $message .= "📅 {$date}\n\n";
-        $message .= "━━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "📈 <b>RINGKASAN HARI INI</b>\n";
-        $message .= "━━━━━━━━━━━━━━━━━━━━━\n\n";
-        $message .= "🔹 <b>pH Air</b>\n";
-        $message .= "   Rata-rata: {$dailyStats['ph_avg']}\n";
-        $message .= "   Min: {$dailyStats['ph_min']} | Max: {$dailyStats['ph_max']}\n\n";
-        $message .= "🔹 <b>Kekeruhan</b>\n";
-        $message .= "   Rata-rata: {$dailyStats['turbidity_avg']} NTU\n";
-        $message .= "   Min: {$dailyStats['turbidity_min']} | Max: {$dailyStats['turbidity_max']}\n\n";
-        $message .= "🔹 <b>Salinitas</b>\n";
-        $message .= "   Rata-rata: {$dailyStats['salinity_avg']} ppt\n";
-        $message .= "   Min: {$dailyStats['salinity_min']} | Max: {$dailyStats['salinity_max']}\n\n";
-        $message .= "🔹 <b>Skor Kualitas</b>\n";
-        $message .= "   Rata-rata: {$dailyStats['score_avg']}/100\n";
-        $message .= "   Min: {$dailyStats['score_min']} | Max: {$dailyStats['score_max']}\n\n";
-        $message .= "━━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "📊 Total Pengukuran: {$dailyStats['total_readings']}x\n";
-        $message .= "🔗 Detail: <a href=\"https://tambaq.com/history\">Lihat Riwayat</a>";
+        $message = "<b>[DAILY REPORT - TAMBAQ WATER QUALITY]</b>\n";
+        $message .= "----------------------------------------\n\n";
+        $message .= "<b>REPORT ID:</b> #{$reportId}\n";
+        $message .= "<b>DATE:</b> {$date}\n";
+        $message .= "<b>TOTAL READINGS:</b> {$dailyStats['total_readings']}\n\n";
+        $message .= "----------------------------------------\n";
+        $message .= "<b>DAILY SUMMARY</b>\n";
+        $message .= "----------------------------------------\n\n";
+        $message .= "<b>pH Level</b>\n";
+        $message .= "  - Average: {$dailyStats['ph_avg']}\n";
+        $message .= "  - Min: {$dailyStats['ph_min']} | Max: {$dailyStats['ph_max']}\n\n";
+        $message .= "<b>TDS</b>\n";
+        $message .= "  - Average: {$dailyStats['tds_avg']} ppm\n";
+        $message .= "  - Min: {$dailyStats['tds_min']} | Max: {$dailyStats['tds_max']}\n\n";
+        $message .= "<b>Turbidity</b>\n";
+        $message .= "  - Average: {$dailyStats['turbidity_avg']} NTU\n";
+        $message .= "  - Min: {$dailyStats['turbidity_min']} | Max: {$dailyStats['turbidity_max']}\n\n";
+        $message .= "<b>Water Quality Score</b>\n";
+        $message .= "  - Average: {$dailyStats['score_avg']}/100\n";
+        $message .= "  - Min: {$dailyStats['score_min']} | Max: {$dailyStats['score_max']}\n\n";
+        $message .= "----------------------------------------\n";
+        $message .= "<b>DASHBOARD:</b> https://tambaq.temandev.com/history\n";
+        $message .= "----------------------------------------";
 
         return $this->sendMessage($message, $chatId);
     }

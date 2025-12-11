@@ -250,12 +250,6 @@
                 </div>
                 
                 <div class="realtime-item">
-                    <div class="label">Salinity</div>
-                    <div class="value">{{ number_format($realtimeData['salinity_ppt'] ?? 0, 2) }}</div>
-                    <div class="unit">PPT</div>
-                </div>
-                
-                <div class="realtime-item">
                     <div class="label">Water Quality Score</div>
                     <div class="value">{{ number_format($realtimeData['water_quality_score'] ?? 0, 2) }}</div>
                     <div class="unit">/100</div>
@@ -325,12 +319,6 @@
             </div>
             
             <div class="summary-card">
-                <div class="label">Salinity (ppt)</div>
-                <div class="value">{{ $summary['avg_salinity'] ?? 0 }}</div>
-                <div class="range">Rata-rata Salinitas</div>
-            </div>
-            
-            <div class="summary-card">
                 <div class="label">Total Records</div>
                 <div class="value">{{ $summary['total_records'] ?? 0 }}</div>
                 <div class="range">Data Points</div>
@@ -345,13 +333,12 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th style="width: 13%;">Timestamp</th>
+                    <th style="width: 15%;">Timestamp</th>
                     <th style="width: 10%;">Score</th>
-                    <th style="width: 8%;">pH</th>
-                    <th style="width: 10%;">TDS</th>
-                    <th style="width: 10%;">Turbidity</th>
-                    <th style="width: 10%;">Salinity</th>
-                    <th style="width: 10%;">Ultrasonic</th>
+                    <th style="width: 10%;">pH</th>
+                    <th style="width: 12%;">TDS</th>
+                    <th style="width: 12%;">Turbidity</th>
+                    <th style="width: 12%;">Water Level</th>
                     <th style="width: 14%;">Category</th>
                 </tr>
             </thead>
@@ -378,13 +365,12 @@
                     <td>{{ number_format($row['ph_value'] ?? 0, 2) }}</td>
                     <td>{{ number_format($row['tds_value'] ?? 0, 2) }}</td>
                     <td>{{ number_format($row['turbidity'] ?? 0, 2) }}</td>
-                    <td>{{ number_format($row['salinity_ppt'] ?? 0, 2) }}</td>
-                    <td>{{ number_format($row['ultrasonic_value'] ?? 0, 2) }}</td>
+                    <td>{{ number_format($row['water_level'] ?? 0, 2) }}</td>
                     <td style="font-size: 7px;">{{ $row['water_quality_status'] ?? '-' }}</td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="8" style="text-align: center; color: #999;">Tidak ada data untuk periode ini</td>
+                    <td colspan="7" style="text-align: center; color: #999;">Tidak ada data untuk periode ini</td>
                 </tr>
                 @endforelse
             </tbody>
