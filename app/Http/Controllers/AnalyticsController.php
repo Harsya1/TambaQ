@@ -124,9 +124,6 @@ class AnalyticsController extends Controller
                     'pH_TDS' => 0.45,
                     'TDS_Turbidity' => 0.71,
                     'pH_Turbidity' => -0.12,
-                    'Salinity_TDS' => 0.90,
-                    'pH_Salinity' => 0.35,
-                    'Turbidity_Salinity' => 0.58,
                 ]);
             }
 
@@ -134,7 +131,6 @@ class AnalyticsController extends Controller
             $pH = $data->pluck('ph_value')->filter()->values()->toArray();
             $tds = $data->pluck('tds_value')->filter()->values()->toArray();
             $turbidity = $data->pluck('turbidity')->filter()->values()->toArray();
-            $salinity = $data->pluck('salinity_ppt')->filter()->values()->toArray();
 
             // Check if we have enough data points
             if (count($pH) < 5 || count($tds) < 5 || count($turbidity) < 5) {
@@ -142,9 +138,6 @@ class AnalyticsController extends Controller
                     'pH_TDS' => 0.45,
                     'TDS_Turbidity' => 0.71,
                     'pH_Turbidity' => -0.12,
-                    'Salinity_TDS' => 0.90,
-                    'pH_Salinity' => 0.35,
-                    'Turbidity_Salinity' => 0.58,
                 ]);
             }
 
@@ -152,9 +145,6 @@ class AnalyticsController extends Controller
                 'pH_TDS' => round($this->calculatePearsonCorrelation($pH, $tds), 2),
                 'TDS_Turbidity' => round($this->calculatePearsonCorrelation($tds, $turbidity), 2),
                 'pH_Turbidity' => round($this->calculatePearsonCorrelation($pH, $turbidity), 2),
-                'Salinity_TDS' => round($this->calculatePearsonCorrelation($salinity, $tds), 2),
-                'pH_Salinity' => round($this->calculatePearsonCorrelation($pH, $salinity), 2),
-                'Turbidity_Salinity' => round($this->calculatePearsonCorrelation($turbidity, $salinity), 2),
             ]);
         } catch (\Exception $e) {
             // Log error and return dummy data
@@ -164,9 +154,6 @@ class AnalyticsController extends Controller
                 'pH_TDS' => 0.45,
                 'TDS_Turbidity' => 0.71,
                 'pH_Turbidity' => -0.12,
-                'Salinity_TDS' => 0.90,
-                'pH_Salinity' => 0.35,
-                'Turbidity_Salinity' => 0.58,
             ]);
         }
     }
@@ -188,7 +175,6 @@ class AnalyticsController extends Controller
                 'pH_next3h' => 7.12,
                 'TDS_next3h' => 270,
                 'turbidity_next3h' => 11.4,
-                'salinity_next3h' => 15.2,
                 'confidence' => 'medium'
             ]);
         }
@@ -198,7 +184,6 @@ class AnalyticsController extends Controller
         $phForecast = $data->avg('ph_value');
         $tdsForecast = $data->avg('tds_value');
         $turbidityForecast = $data->avg('turbidity');
-        $salinityForecast = $data->avg('salinity_ppt');
 
         // Calculate confidence based on standard deviation
         $confidence = $this->calculateConfidence($data);
@@ -207,7 +192,6 @@ class AnalyticsController extends Controller
             'pH_next3h' => round($phForecast, 2),
             'TDS_next3h' => round($tdsForecast, 2),
             'turbidity_next3h' => round($turbidityForecast, 2),
-            'salinity_next3h' => round($salinityForecast, 2),
             'confidence' => $confidence
         ]);
     }
@@ -234,7 +218,7 @@ class AnalyticsController extends Controller
             $file = fopen('php://output', 'w');
             
             // Header
-            fputcsv($file, ['Timestamp', 'Score', 'pH', 'TDS (ppm)', 'Turbidity (NTU)', 'Salinity (ppt)', 'Water Level (cm)', 'Category']);
+            fputcsv($file, ['Timestamp', 'Score', 'pH', 'TDS (ppm)', 'Turbidity (NTU)', 'Water Level (cm)', 'Category']);
             
             // Data rows
             foreach ($historyData as $row) {
@@ -244,7 +228,6 @@ class AnalyticsController extends Controller
                     $row['ph_value'],
                     $row['tds_value'],
                     $row['turbidity'],
-                    $row['salinity_ppt'],
                     $row['water_level'],
                     $row['category'],
                 ]);
@@ -280,7 +263,6 @@ class AnalyticsController extends Controller
             'avg_ph' => round($historicalCollection->avg('ph_value') ?? 0, 2),
             'avg_tds' => round($historicalCollection->avg('tds_value') ?? 0, 2),
             'avg_turbidity' => round($historicalCollection->avg('turbidity') ?? 0, 2),
-            'avg_salinity' => round($historicalCollection->avg('salinity_ppt') ?? 0, 2),
             'min_ph' => round($historicalCollection->min('ph_value') ?? 0, 2),
             'max_ph' => round($historicalCollection->max('ph_value') ?? 0, 2),
             'min_tds' => round($historicalCollection->min('tds_value') ?? 0, 2),

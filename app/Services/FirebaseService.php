@@ -87,25 +87,12 @@ class FirebaseService
             $turbidityValue = $this->extractValue($fields, 'turbidityValue');
             $ultrasonicValue = $this->extractValue($fields, 'ultrasonicValue');
             
-            // Check if salinity already exists in Firestore, if not calculate and update
-            $salinityPpt = $this->extractValue($fields, 'salinitasValue');
-            
-            if ($salinityPpt === null || $salinityPpt === 0 || $salinityPpt == 0) {
-                // Convert TDS to Salinity
-                $salinityPpt = $this->convertTDStoSalinity($tdsValue);
-                
-                // Update Firestore with calculated salinity
-                $this->updateSensorDataWithSalinity($salinityPpt);
-            }
-            
             // Convert field names to match Laravel convention
             $result = [
                 'ph_value' => $phValue,
                 'tds_value' => $tdsValue, // PPM
                 'turbidity' => $turbidityValue, // NTU
                 'water_level' => $ultrasonicValue, // cm
-                'salinity_ppt' => $salinityPpt, // PPT (from Firestore or calculated)
-                'salinity' => $salinityPpt, // Alias for compatibility
                 'timestamp' => $data['updateTime'] ?? now()->toDateTimeString(),
             ];
             
@@ -160,8 +147,6 @@ class FirebaseService
                 'tds_value' => $this->extractValue($fields, 'tds_value') ?? $this->extractValue($fields, 'TDSValue'),
                 'turbidity' => $this->extractValue($fields, 'turbidity') ?? $this->extractValue($fields, 'turbidityValue'),
                 'water_level' => $this->extractValue($fields, 'water_level') ?? $this->extractValue($fields, 'ultrasonicValue'),
-                'salinity_ppt' => $this->extractValue($fields, 'salinity_ppt') ?? $this->extractValue($fields, 'salinitasValue'),
-                'salinity' => $this->extractValue($fields, 'salinity') ?? $this->extractValue($fields, 'salinitasValue'),
                 'timestamp' => $this->extractValue($fields, 'timestamp') ?? ($doc['updateTime'] ?? now()->toDateTimeString()),
             ];
             
@@ -202,22 +187,6 @@ class FirebaseService
         }
         
         return null;
-    }
-
-    /**
-     * Convert TDS (PPM) to Salinity (PPT)
-     * Using simplified conversion formula: Salinity (PPT) = TDS (PPM) × K / 1000
-     * Where K = 0.57 (conversion factor for seawater)
-     */
-    private function convertTDStoSalinity($tdsValue, $temperature = 25)
-    {
-        if ($tdsValue === null || $tdsValue === 0) {
-            return 0;
-        }
-        
-        $K = 0.57; // Conversion factor
-        $salinity_ppt = ($tdsValue * $K) / 1000;
-        return round($salinity_ppt, 2);
     }
 
     /**
@@ -284,7 +253,6 @@ class FirebaseService
                     'tds_value' => ['doubleValue' => $sensorData['tds_value']],
                     'turbidity' => ['doubleValue' => $sensorData['turbidity']],
                     'water_level' => ['doubleValue' => $sensorData['water_level']],
-                    'salinity_ppt' => ['doubleValue' => $sensorData['salinity_ppt']],
                     'water_quality_score' => ['doubleValue' => $fuzzyResult['water_quality_score']],
                     'category' => ['stringValue' => $fuzzyResult['category']],
                     'recommendation' => ['stringValue' => $fuzzyResult['recommendation']],
@@ -400,7 +368,6 @@ class FirebaseService
                         'tds_value' => $this->extractValue($fields, 'tds_value'),
                         'turbidity' => $this->extractValue($fields, 'turbidity'),
                         'water_level' => $this->extractValue($fields, 'water_level'),
-                        'salinity_ppt' => $this->extractValue($fields, 'salinity_ppt'),
                         'water_quality_score' => $this->extractValue($fields, 'water_quality_score'),
                         'category' => $this->extractValue($fields, 'category'),
                         'recommendation' => $this->extractValue($fields, 'recommendation'),
@@ -483,41 +450,6 @@ class FirebaseService
     }
 
     /**
-     * Update sensor data with calculated salinity value
-     * Collection: sensorRead > Document: dataSensor
-     * Adds: salinitasValue field with converted PPM to PPT
-     */
-    public function updateSensorDataWithSalinity($salinityPpt)
-    {
-        try {
-            // Build URL with API key for authentication
-            $url = "{$this->baseUrl}/sensorRead/dataSensor?key={$this->apiKey}";
-            
-            // Prepare Firestore format for salinity field
-            $document = [
-                'fields' => [
-                    'salinitasValue' => ['doubleValue' => $salinityPpt],
-                ]
-            ];
-            
-            // PATCH request to update only salinitasValue field
-            $response = Http::patch("{$url}&updateMask.fieldPaths=salinitasValue", $document);
-            
-            if ($response->successful()) {
-                Log::info('Salinity value updated in dataSensor: ' . $salinityPpt . ' PPT');
-                return true;
-            } else {
-                Log::error('Failed to update salinity value: ' . $response->status() . ' - ' . $response->body());
-                return false;
-            }
-            
-        } catch (\Exception $e) {
-            Log::error('Error updating salinity in Firestore: ' . $e->getMessage());
-            return false;
-        }
-    }
-
-    /**
      * Get recent sensor readings for charts (last 24 hours simulation)
      */
     public function getChartData($hours = 24)
@@ -536,7 +468,6 @@ class FirebaseService
             $phData = [];
             $tdsData = [];
             $turbidityData = [];
-            $salinityData = [];
             $waterLevelData = [];
             
             for ($i = $hours - 1; $i >= 0; $i--) {
@@ -548,7 +479,6 @@ class FirebaseService
                 $phData[] = $currentData['ph_value'] + (rand(-10, 10) / 100);
                 $tdsData[] = $currentData['tds_value'] + rand(-50, 50);
                 $turbidityData[] = max(0, $currentData['turbidity'] + rand(-5, 5));
-                $salinityData[] = $currentData['salinity_ppt'] + (rand(-5, 5) / 100);
                 $waterLevelData[] = $currentData['water_level'] + (rand(-2, 2) / 10);
             }
             
@@ -557,7 +487,6 @@ class FirebaseService
                 'phData' => $phData,
                 'tdsData' => $tdsData,
                 'turbidityData' => $turbidityData,
-                'salinityData' => $salinityData,
                 'waterLevelData' => $waterLevelData,
             ];
             

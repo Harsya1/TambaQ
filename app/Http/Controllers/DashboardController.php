@@ -44,7 +44,6 @@ class DashboardController extends Controller
                     'tds_value' => 0,
                     'turbidity' => 0,
                     'water_level' => 0,
-                    'salinity_ppt' => 0,
                     'water_quality_score' => 0
                 ]
             ];
@@ -52,8 +51,7 @@ class DashboardController extends Controller
                 'ph_value' => 0,
                 'tds_value' => 0,
                 'turbidity' => 0,
-                'water_level' => 0,
-                'salinity_ppt' => 0
+                'water_level' => 0
             ];
         }
         
@@ -120,8 +118,8 @@ class DashboardController extends Controller
             if ($this->telegramService->canSendAlert($alertKey)) {
                 $this->telegramService->sendAlert(
                     (float) ($sensorData['ph_value'] ?? 0),
+                    (float) ($sensorData['tds_value'] ?? 0),
                     (float) ($sensorData['turbidity'] ?? 0),
-                    (float) ($sensorData['salinity_ppt'] ?? 0),
                     $category,
                     $score
                 );
@@ -148,8 +146,18 @@ class DashboardController extends Controller
         if ($ph < 6.5 || $ph > 8.5) {
             $alerts['ph'] = [
                 'value' => $ph,
-                'status' => $ph > 8.5 ? 'TERLALU TINGGI' : 'TERLALU RENDAH',
+                'status' => $ph > 8.5 ? 'ABOVE THRESHOLD' : 'BELOW THRESHOLD',
                 'normal' => '6.5 - 8.5'
+            ];
+        }
+
+        // Cek TDS (normal: 300 - 800 ppm)
+        $tds = $sensorData['tds_value'] ?? 0;
+        if ($tds < 300 || $tds > 800) {
+            $alerts['tds'] = [
+                'value' => $tds,
+                'status' => $tds > 800 ? 'ABOVE THRESHOLD' : 'BELOW THRESHOLD',
+                'normal' => '300 - 800 ppm'
             ];
         }
 
@@ -158,18 +166,8 @@ class DashboardController extends Controller
         if ($turbidity < 20 || $turbidity > 45) {
             $alerts['turbidity'] = [
                 'value' => $turbidity,
-                'status' => $turbidity > 45 ? 'TERLALU TINGGI' : 'TERLALU RENDAH',
+                'status' => $turbidity > 45 ? 'ABOVE THRESHOLD' : 'BELOW THRESHOLD',
                 'normal' => '20 - 45 NTU'
-            ];
-        }
-
-        // Cek Salinitas (normal: 10 - 25 ppt)
-        $salinity = $sensorData['salinity_ppt'] ?? 0;
-        if ($salinity < 10 || $salinity > 25) {
-            $alerts['salinity'] = [
-                'value' => $salinity,
-                'status' => $salinity > 25 ? 'TERLALU TINGGI' : 'TERLALU RENDAH',
-                'normal' => '10 - 25 ppt'
             ];
         }
 
@@ -177,7 +175,7 @@ class DashboardController extends Controller
         if (!empty($alerts)) {
             $alertKey = 'combined_params_' . implode('_', array_keys($alerts));
             if ($this->telegramService->canSendAlert($alertKey)) {
-                $this->telegramService->sendCombinedAlert($ph, $turbidity, $salinity, $alerts);
+                $this->telegramService->sendCombinedAlert($ph, $tds, $turbidity, $alerts);
             }
         }
     }
@@ -198,7 +196,6 @@ class DashboardController extends Controller
                     'tds_value' => 0,
                     'turbidity' => 0,
                     'water_level' => 0,
-                    'salinity_ppt' => 0,
                     'water_quality_score' => 0
                 ],
                 'fuzzyDecision' => (object) [
