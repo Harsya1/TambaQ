@@ -28,12 +28,12 @@ return [
     ],
 
     'storage' => [
-        'default_bucket' => env('FIREBASE_STORAGE_BUCKET', 'cihuyyy-7eb5ca94.firebasestorage.app'),
+        'default_bucket' => env('FIREBASE_STORAGE_BUCKET'),
     ],
 
-    // Web API Config
-    'api_key' => env('FIREBASE_API_KEY', 'AIzaSyAQbCAw5eKmrNKOVsjUrCTYtJ0rSmAhoM8'),
-    'auth_domain' => env('FIREBASE_AUTH_DOMAIN', 'cihuyyy-7eb5ca94.firebaseapp.com'),
-    'messaging_sender_id' => env('FIREBASE_MESSAGING_SENDER_ID', '132702781263'),
-    'app_id' => env('FIREBASE_APP_ID', '1:132702781263:web:c1ffb7374eb2835e490f3a'),
+    // Web API Config (MUST be set in .env file - never commit secrets)
+    'api_key' => env('FIREBASE_API_KEY'),
+    'auth_domain' => env('FIREBASE_AUTH_DOMAIN'),
+    'messaging_sender_id' => env('FIREBASE_MESSAGING_SENDER_ID'),
+    'app_id' => env('FIREBASE_APP_ID'),
 ];
