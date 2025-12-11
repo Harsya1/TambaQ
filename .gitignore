@@ -3,6 +3,10 @@
 .env
 .env.backup
 .env.production
+
+# Local ESP32 files with credentials (never commit)
+*.local.cpp
+kodeesp32_credentials.h
 .phpactor.json
 .phpunit.result.cache
 /.fleet

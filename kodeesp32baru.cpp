@@ -5,15 +5,17 @@
 
 // --------------------------------------------------------------
 // WIFI & FIREBASE
+// WARNING: Copy this file to 'kodeesp32baru.local.cpp' and fill credentials there
+// DO NOT commit credentials to git!
 // --------------------------------------------------------------
-#define WIFI_SSID "LAB RSI"
-#define WIFI_PASSWORD "rsi@polije"
+#define WIFI_SSID "YOUR_WIFI_SSID"
+#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
 
-#define API_KEY "AIzaSyAQbCAw5eKmrNKOVsjUrCTYtJ0rSmAhoM8"
-#define FIREBASE_PROJECT_ID "cihuyyy-7eb5ca94"
+#define API_KEY "YOUR_FIREBASE_API_KEY"
+#define FIREBASE_PROJECT_ID "YOUR_FIREBASE_PROJECT_ID"
 
-#define USER_EMAIL "esp32@example.com"
-#define USER_PASSWORD "password123"
+#define USER_EMAIL "YOUR_ESP32_EMAIL"
+#define USER_PASSWORD "YOUR_ESP32_PASSWORD"
 
 // --------------------------------------------------------------
 // PIN SENSOR
